@@ -1,15 +1,9 @@
 #include <fstream>
 #include <cmath>
-#include <iostream>
+#include <cstring>
+#include <sstream>
 
 #define TAU 6.283185307179586
-
-// double -> unsigned char; clamps input between 0 and 255, then casts to unsigned char
-unsigned char cclamp(double n) {
-    if (n <= 0) return (unsigned char) 0;
-    if (n >= 255) return (unsigned char) 255;
-    return (unsigned char) std::round(n);
-}
 
 // double[3], double[3] -> double; euclidean distance between two 3d points
 double hypot(double a[3], double b[3]) {
@@ -19,11 +13,11 @@ double hypot(double a[3], double b[3]) {
     return x*x + y*y + z*z;
 }
 
-// double, double -> double; euclidean distance between two d points
-double geomean(double a, double b) {
-    int sign_a = std::round(a/std::abs(a));
-    int sign_b = std::round(b/std::abs(b));
-    return sign_a*sign_b*std::sqrt(std::abs(a*b));
+// double -> unsigned char; clamps input between 0 and 255, then casts to unsigned char
+unsigned char cclamp(double n) {
+    if (n <= 0) return (unsigned char) 0;
+    if (n >= 255) return (unsigned char) 255;
+    return (unsigned char) std::round(n);
 }
 
 // double -> double; converts an srgb value to linear srgb
@@ -69,42 +63,37 @@ void oklab_srgb(double lab[3], unsigned char rgb[3]) {
 int main() {
 
 
+    // --v-- color settings --v-- //
+    std::string color_palette = "8";
 
-    //   -- settings --   //
-    bool l_normalize = false;
     double l_offset = 0.0;
-    double l_scale = 1.0;
+    double l_scale = 1.0; // -inf to +inf
 
-    // double l_offset = -0.35;
-    // double l_scale = 1.6;
-
-    double hue_phase = 0.0; // zero to one (cyclic)
+    double hue_phase = 0.0; // 0.00 to 1.00 (cyclic)
     double hue_scale = 1.0;
 
     double a_offset = 0.0;
     double b_offset = 0.0;
-    //   --------------   //
+    // --v-- dither settings --v-- //
 
-    const double dither_intensity = 0.6;
-    //   --------------   //
+    const double dither_intensity = 0.64;
+    const int error_length = 29;
+    // --------------------------- //
 
 
-
-    system("ffmpeg -loglevel quiet -i \"palettes\\c64.png\" palette.ppm -y");
+    std::stringstream palette_cmd;
+    palette_cmd << "ffmpeg -loglevel quiet -i \"palettes\\" << color_palette << ".png\" palette.ppm -y";
+    system(palette_cmd.str().c_str());
     std::ifstream palette("palette.ppm", std::ios_base::binary);
-
     char magic_num2[3];
     int width2 = 0, height2 = 0, max_val2 = 0;
     palette >> magic_num2;
     palette >> width2 >> height2 >> max_val2;
     palette.get();
-
-    const int num_colors = width2*height2;
-    const int error_length = 69;
-
-    double palette_L[num_colors];
-    double palette_a[num_colors];
-    double palette_b[num_colors];
+    static int num_colors = width2*height2;
+    double palette_L[num_colors] = {0.0};
+    double palette_a[num_colors] = {0.0};
+    double palette_b[num_colors] = {0.0};
 
     for (int i=0; i<num_colors; i++) {
         unsigned char rgb[3];
@@ -121,6 +110,18 @@ int main() {
     }
     palette.close();
 
+    system("ffmpeg -loglevel quiet -i input.png dither_input.ppm -y");
+    std::ifstream input("dither_input.ppm", std::ios_base::binary);
+    char magic_num[3];
+    int width = 0, height = 0, max_val = 0;
+    input >> magic_num;
+    input >> width >> height >> max_val;
+    input.get();
+    int num_pixels = width*height;
+
+    std::ofstream output("dither_output.ppm", std::ios_base::binary);
+    output << magic_num << "\n" << width << " " << height << "\n" << max_val << std::endl;
+
     double weights[error_length];
     for (int i=0; i<error_length; i++) {
         weights[i] = 1.0/(i+1);
@@ -135,20 +136,6 @@ int main() {
         errors_b[i] = 0.0;
     }
 
-    system("ffmpeg -loglevel quiet -i input.png temp1.ppm -y");
-    std::ifstream input("temp1.ppm", std::ios_base::binary);
-
-    char magic_num[3];
-    int width = 0, height = 0, max_val = 0;
-    input >> magic_num;
-    input >> width >> height >> max_val;
-    input.get();
-
-    int num_pixels = width*height;
-
-    std::ofstream output("temp3.ppm", std::ios_base::binary);
-    output << magic_num << "\n" << width << " " << height << "\n" << max_val << std::endl;
-
     for (int i=0; i<num_pixels; i++) {
         unsigned char old_rgb[3];
         double old_lab[3];
@@ -162,11 +149,9 @@ int main() {
         double lab0 = old_lab[0];
         double lab1 = old_lab[1];
         double lab2 = old_lab[2];
-
         old_lab[0] = l_offset + (lab0-0.5)*l_scale+0.5;
         old_lab[1] = a_offset + (lab1*std::cos(hue_phase*TAU) - lab2*std::sin(hue_phase*TAU))*hue_scale;
         old_lab[2] = b_offset + (lab2*std::cos(hue_phase*TAU) + lab1*std::sin(hue_phase*TAU))*hue_scale;
-
         lab0 = old_lab[0];
         lab1 = old_lab[1];
         lab2 = old_lab[2];
@@ -177,7 +162,6 @@ int main() {
                 error_lab[1] += errors_a[m]*weights[m];
                 error_lab[2] += errors_b[m]*weights[m];
         }
-
         old_lab[0] -= error_lab[0]*dither_intensity;
         old_lab[1] -= error_lab[1]*dither_intensity;
         old_lab[2] -= error_lab[2]*dither_intensity;
@@ -191,7 +175,7 @@ int main() {
 
             delta[d] = hypot(old_lab, p_lab);
         }
-        int amin_delta;
+        int amin_delta = 0;
         for (int d=0; d<num_colors; d++){
             if(delta[d] < delta[amin_delta]) {
                 amin_delta = d;
@@ -203,24 +187,23 @@ int main() {
         new_lab[0] = palette_L[amin_delta];
         new_lab[1] = palette_a[amin_delta];
         new_lab[2] = palette_b[amin_delta];
+
         oklab_srgb(new_lab, new_rgb);
+
         output << new_rgb[0] << new_rgb[1] << new_rgb[2];
 
-        for(int m=error_length-1; m>=0; m--) {
-            errors_L[m+1] = errors_L[m];
-            errors_a[m+1] = errors_a[m];
-            errors_b[m+1] = errors_b[m];
+        for(int m=error_length-1; m>0; m--) {
+            errors_L[m] = errors_L[m-1];
+            errors_a[m] = errors_a[m-1];
+            errors_b[m] = errors_b[m-1];
         }
-
         errors_L[0] = new_lab[0] - lab0;
         errors_a[0] = new_lab[1] - lab1;
         errors_b[0] = new_lab[2] - lab2;
     }
 
-    output.close();
     input.close();
-
-    system("ffmpeg -loglevel quiet -i temp3.ppm output.png -y && del *.ppm");
-
+    output.close();
+    system("ffmpeg -loglevel quiet -i dither_output.ppm output.png -y && del *.ppm");
     return 0;
 }
