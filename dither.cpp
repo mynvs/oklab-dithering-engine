@@ -64,7 +64,7 @@ int main() {
 
 
     // --v-- color settings --v-- //
-    std::string color_palette = "8";
+    std::string color_palette = "150";
 
     double l_offset = 0.0;
     double l_scale = 1.0; // -inf to +inf
@@ -77,7 +77,7 @@ int main() {
     // --v-- dither settings --v-- //
 
     const double dither_intensity = 0.64;
-    const int error_length = 29;
+    const int error_length = 69;
     // --------------------------- //
 
 
@@ -90,10 +90,10 @@ int main() {
     palette >> magic_num2;
     palette >> width2 >> height2 >> max_val2;
     palette.get();
-    static int num_colors = width2*height2;
-    double palette_L[num_colors] = {0.0};
-    double palette_a[num_colors] = {0.0};
-    double palette_b[num_colors] = {0.0};
+    int num_colors = width2*height2;
+    double palette_L[4096];
+    double palette_a[4096];
+    double palette_b[4096];
 
     for (int i=0; i<num_colors; i++) {
         unsigned char rgb[3];
@@ -166,7 +166,7 @@ int main() {
         old_lab[1] -= error_lab[1]*dither_intensity;
         old_lab[2] -= error_lab[2]*dither_intensity;
 
-        double delta[num_colors];
+        double delta[4096];
         for (int d=0; d<num_colors; d++){
             double p_lab[3];
             p_lab[0] = palette_L[d];

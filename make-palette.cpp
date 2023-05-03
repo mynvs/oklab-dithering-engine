@@ -4,9 +4,9 @@
 #include <sstream>
 
 int main() {
-    const int RED = 2;
-    const int GRN = 2;
-    const int BLU = 2;
+    const int RED = 5;
+    const int GRN = 6;
+    const int BLU = 5;
 
     const int num_colors = RED*GRN*BLU;
     const double val_GB = 1.0/(GRN*BLU);
