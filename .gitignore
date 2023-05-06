@@ -1,0 +1,6 @@
+a.out
+/bin/*
+/dither.png
+/output.png
+/*.ppm
+
