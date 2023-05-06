@@ -12,6 +12,7 @@
 #include <cstring>
 #include <iostream>
 #include <sstream>
+#include <filesystem>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -27,7 +28,7 @@
 
 
 int main(int argc, char* argv[]) {
-    std::string color_palette = "12";
+    const char* color_palette = "12";
     const char* filen = "input.png";
     const char* out = "dither";
     algorithm a = errordiffuse;
@@ -40,7 +41,17 @@ int main(int argc, char* argv[]) {
         }
         else if (std::string(argv[i]) == "-c")
         {
-            color_palette = argv[++i];
+            struct stat buffer {};
+            std::stringstream ext;
+            ext <<"palettes/"<<argv[++i]<<".png";
+            if (stat(ext.str().c_str(), &buffer) == 0) {
+                color_palette = argv[i];
+                printf("Using \u001b[90m\"\u001b[0m%s\u001b[90m\"\u001b[0m\u001b[3m color palette\u001b[0m.\n", argv[i]);
+            }
+            else {
+                printf("Palette \u001b[90m\"\u001b[0m%s\u001b[90m\"\u001b[0m\u001b[31m doesn't exist\u001b[0m.\n", argv[i]);
+                return 1;
+            }
         }
         else if (std::string(argv[i]) == "-o")
         {
@@ -68,6 +79,12 @@ int main(int argc, char* argv[]) {
         }
     }
 
+    struct stat buffer {};
+    if (filen == "input.png" && ~stat("./input.png", &buffer) == 0) {
+        printf("There is\u001b[31m no input file\u001b[0m in working directory.\n");
+        return 1;
+    }
+
     auto input_color_space = get_color_space(RGB);
     auto palette_color_space = get_color_space(RGB);
     auto dither_color_space = get_color_space(OKLAB); 
@@ -86,7 +103,9 @@ int main(int argc, char* argv[]) {
 
     dither_settings settings;
     set_dither_defaults(settings);
-    settings.stalg = a;
+    if (a != errordiffuse) {
+        settings.stalg = a;
+    }
 
     ppm_file_info file_info;
     std::stringstream d;

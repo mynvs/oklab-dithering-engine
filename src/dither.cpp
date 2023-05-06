@@ -156,4 +156,3 @@ void dither(const dither_settings& settings,
 #endif
     }
 }
-

@@ -33,4 +33,3 @@ void load_palette(const std::string& palette_ppm_filename, const color_space_con
         palette.channel2[i] = output_color[2];
     }
 }
-

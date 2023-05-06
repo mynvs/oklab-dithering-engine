@@ -33,5 +33,3 @@ void save_ppm_image(const std::string& output_name, const ppm_file_info& file_in
     }
     output.close();
 }
-
-

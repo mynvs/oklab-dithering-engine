@@ -1,4 +1,5 @@
 #include <memory>
+#include <iostream>
 
 #include "color_space.h"
 

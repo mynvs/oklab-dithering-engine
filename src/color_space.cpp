@@ -1,5 +1,6 @@
 #include <math.h>
 #include "color_space.h"
+#include <iostream>
 
 // float -> unsigned char; clamps input between 0 and 255, then casts to unsigned char
 static uint8_t cclamp(float n) {
