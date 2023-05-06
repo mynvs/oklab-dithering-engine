@@ -8,8 +8,10 @@
 #include <iostream>
 #ifdef _WIN32
 #include <windows.h>
+#define DEL "del"
 #else
 #include <unistd.h>
+#define DEL "rm"
 #endif
 #include <chrono>
 
@@ -82,12 +84,20 @@ float hypot(float a[3], float b[3]) {
 
 // float -> float; converts an srgb value to linear srgb
 float linearize(float x) {
-    return powf((x + 0.055) * 0.94786729857819905, 2.4);
+    if (x > 0.04045) {
+        return powf((x + 0.055)*0.94786729857819905, 2.4);
+    } else {
+        return x * 0.07739938080495357;
+    }
 }
 
 // float -> float; converts a linear srgb value to srgb
 float unlinearize(float x) {
-    return powf(x, 0.41666666666666667) * 1.055 - 0.055;
+    if( x > 0.0031308 ) {
+        return powf(x, 0.41666666666666667)*1.055 - 0.055;
+    } else {
+        return 12.92 * x;
+    }
 }
 
 // unsigned char[3] -> float[3]; converts an srgb input to oklab
@@ -395,7 +405,7 @@ int main(int argc, char* argv[]) {
 
     save_ppm_image("dither_output.ppm", file_info, output_image);
     std::stringstream df;
-    df << "ffmpeg -loglevel quiet -i dither_output.ppm " << out << ".png -y && del *.ppm";
+    df << "ffmpeg -loglevel quiet -i dither_output.ppm " << out << ".png -y && " << DEL << " *.ppm";
     system(df.str().c_str());
     
     if (showimg) {
