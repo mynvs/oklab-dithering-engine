@@ -32,7 +32,9 @@ int main(int argc, char* argv[]) {
     const char* filen = "input.png";
     const char* out = "dither";
     algorithm a = errordiffuse;
+    dither_settings settings;
     bool showimg = false;
+    bool schng = false;
     for (int i = 1; i < argc; i++)
     {
         if (std::string(argv[i]) == "-i")
@@ -74,6 +76,21 @@ int main(int argc, char* argv[]) {
                 return 1;
             }
         }
+        else if (std::string(argv[i]) == "-p") {
+            std::string dt = argv[++i];
+            if (dt.compare("alien") == 0) {
+                settings.l_offset = -0.3f;
+                settings.l_scale = 2.5f;
+                settings.hue_phase = 0.825f;
+            }
+            else if (dt.compare("invert") == 0) {
+                settings.l_scale = -1.0f;
+                settings.hue_scale = -1.0;
+            }
+            settings.dither_intensity = 0.75;
+            settings.stalg = a;
+            schng = true;
+        }
         else if (std::string(argv[i]) == "--show") {
             showimg = true;
         }
@@ -101,8 +118,7 @@ int main(int argc, char* argv[]) {
     palette_info palette;
     load_palette("palette.ppm", *palette_to_dither_color_space_converter, palette);
 
-    dither_settings settings;
-    set_dither_defaults(settings);
+    if(!schng) set_dither_defaults(settings);
     if (a != errordiffuse) {
         settings.stalg = a;
     }
