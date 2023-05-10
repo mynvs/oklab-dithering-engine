@@ -41,8 +41,8 @@ int main() {
             }
         }
 
-        unsigned char old_rgb[3];
-        unsigned char new_rgb[3];
+        unsigned char old_rgb[3]{};
+        unsigned char new_rgb[3]{};
 
         old_rgb[0] = input1.get();
         old_rgb[1] = input1.get();
@@ -87,8 +87,8 @@ int main() {
     output << magic_num << "\n" << int(std::floor(width*0.3333333333333333)) << " " << height << "\n" << max_val << std::endl;
 
     for (int i=0; i<num_pixels; i++) {
-        unsigned char rgb[3];
-        double lab[3];
+        unsigned char rgb[3]{};
+        double lab[3]{};
 
         rgb[0] = input.get(); // R
         input.get();
