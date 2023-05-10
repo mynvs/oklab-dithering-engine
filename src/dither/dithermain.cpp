@@ -1,14 +1,3 @@
-/*
-#include <limits>
-#include <math.h>
-#include <fstream>
-#include <cmath>
-#include <cstring>
-#include <memory>
-#include <sstream>
-#include <iostream>
-#include <chrono>
-*/
 #include <cstring>
 #include <iostream>
 #include <sstream>
@@ -19,12 +8,15 @@
 #define DEL "del"
 #else
 #include <unistd.h>
+#include <sys/stat.h>
 #define DEL "rm"
 #endif
 
+#include "DitherEngineConfig.h"
 #include "color_space.h"
 #include "dither.h"
 #include "ppm.h"
+
 
 
 int main(int argc, char* argv[]) {
@@ -35,6 +27,7 @@ int main(int argc, char* argv[]) {
     dither_settings settings;
     bool showimg = false;
     bool schng = false;
+    printf("Dithering Engine version %d.%2.2d\n", DITHERING_ENGINE_VERSION_MAJOR, DITHERING_ENGINE_VERSION_MINOR);
     for (int i = 1; i < argc; i++)
     {
         if (std::string(argv[i]) == "-i")
@@ -97,7 +90,7 @@ int main(int argc, char* argv[]) {
     }
 
     struct stat buffer {};
-    if (filen == "input.png" && ~stat("./input.png", &buffer) == 0) {
+    if (std::string(filen) == "input.png" && ~stat("./input.png", &buffer) == 0) {
         printf("There is\u001b[31m no input file\u001b[0m in working directory.\n");
         return 1;
     }
