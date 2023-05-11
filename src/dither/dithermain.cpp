@@ -24,7 +24,7 @@ int main(int argc, char* argv[]) {
     const char* filen = "input.png";
     const char* out = "dither";
     algorithm a = errordiffuse;
-    dither_settings settings;
+    dither_settings settings {};
     bool showimg = false;
     bool schng = false;
     printf("Dithering Engine version %d.%2.2d\n", DITHERING_ENGINE_VERSION_MAJOR, DITHERING_ENGINE_VERSION_MINOR);
