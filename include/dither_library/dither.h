@@ -1,25 +1,3 @@
-/*
-#include <limits>
-#include <math.h>
-#include <fstream>
-#include <cmath>
-#include <cstring>
-#include <memory>
-#include <sstream>
-#include <iostream>
-#ifdef _WIN32
-#include <windows.h>
-#define DEL "del"
-#else
-#include <unistd.h>
-#define DEL "rm"
-#endif
-#include <chrono>
-
-#define TAU 6.283185307179586
-
-#define ERROR_LENGTH 7
-*/
 
 #include "image_buffer.h"
 #include "color_space.h"
@@ -29,15 +7,11 @@
 #define DITHER_H 1
 
 enum algorithm {errordiffuse, ordered};
+enum filter {filter_ramp, filter_decimate};
 
 struct dither_settings {
     algorithm stalg;
-    float l_offset;
-    float l_scale; // -inf to +inf
-    float hue_phase;
-    float hue_scale;
-    float a_offset;
-    float b_offset;
+    filter errorFilter;
     float dither_intensity;
 };
 

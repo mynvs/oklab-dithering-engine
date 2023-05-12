@@ -104,11 +104,11 @@ static void identity_convert(const color_space_converter &converter, const float
     }
 }
 
-static void set_rgb_defaults(rgb_settings& settings) {
+void set_rgb_defaults(rgb_settings& settings) {
     //Does nothing currently
 }
 
-static void set_oklab_defaults(oklab_settings &settings) {
+void set_oklab_defaults(oklab_settings &settings) {
     // --v-- color settings --v-- //
     settings.l_offset = 0.0;
     settings.l_scale = 1.0; // -inf to +inf

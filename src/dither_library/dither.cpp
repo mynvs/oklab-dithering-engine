@@ -1,12 +1,16 @@
+#include <cmath>
 #include <limits>
-#include <stdio.h>
+#include <vector>
 #include "dither.h"
+#include "design_filter_1d.h"
+#include "fir_1d.h"
 
 #define ERROR_LENGTH 7
 
 void set_dither_defaults(dither_settings& settings) {
     //-ALGORITHM TYPE-//
     settings.stalg = errordiffuse;
+    settings.errorFilter = filter_ramp;
     settings.dither_intensity = 0.75;
     // --------------------------- //
 }
@@ -39,20 +43,29 @@ void dither(const dither_settings& settings,
     int num_colors = palette.num_colors;
 
     if (settings.stalg == errordiffuse) {
-        const float negative_dither_intensity = -settings.dither_intensity;
-        float weights[ERROR_LENGTH]{};
-        for (int i = 0; i < ERROR_LENGTH; i++) {
-            weights[i] = 1.0 / (i + 1) * negative_dither_intensity;
-        }
+        const float negative_dither_intensity = -settings.dither_intensity;        
 
-        float errors_0[ERROR_LENGTH];
-        float errors_1[ERROR_LENGTH];
-        float errors_2[ERROR_LENGTH];
-        for (int i = 0; i < ERROR_LENGTH; i++) {
-            errors_0[i] = 0.0;
-            errors_1[i] = 0.0;
-            errors_2[i] = 0.0;
-        }
+        std::vector<float> weights;
+        if (settings.errorFilter == filter_ramp) {
+            for(int i=0; i<ERROR_LENGTH; ++i) {
+                weights.insert(weights.begin(), 1.0 / (i+1) * negative_dither_intensity);
+            }
+        } else if (settings.errorFilter == filter_decimate) {
+            float bitCount = std::log(num_colors)/std::log(2.0);
+            float decimationRatio = 24/bitCount;
+
+            auto data = designHalfDecimationFilter(decimationRatio);
+            for(unsigned i=0; i< data->size(); ++i) {
+                weights.push_back((*data)[i] * negative_dither_intensity);
+            }
+        }   
+        FirFilter1d<float> filter0 = FirFilter1d<float>(weights);
+        FirFilter1d<float> filter1 = FirFilter1d<float>(weights);
+        FirFilter1d<float> filter2 = FirFilter1d<float>(weights);
+        float filter0_error=0.0f;
+        float filter1_error=0.0f;
+        float filter2_error=0.0f;
+
 
         for (int i = 0; i < num_pixels; i++) {
             float source_color[3];
@@ -65,11 +78,9 @@ void dither(const dither_settings& settings,
             old_target_color[0] = target_color[0];
             old_target_color[1] = target_color[1];
             old_target_color[2] = target_color[2];
-            for (int m = 0; m < ERROR_LENGTH; m++) {
-                target_color[0] += errors_0[m] * weights[m];
-                target_color[1] += errors_1[m] * weights[m];
-                target_color[2] += errors_2[m] * weights[m];
-            }
+            target_color[0] += filter0_error;
+            target_color[1] += filter1_error;
+            target_color[2] += filter2_error;
 
             int amin_delta = 0;
             float best_delta = infinity;
@@ -97,14 +108,9 @@ void dither(const dither_settings& settings,
             float_triple_to_bytes(output_color, &output_image[output_image_offset]);
             output_image_offset += 3;
 
-            for (int m = ERROR_LENGTH - 1; m > 0; m--) {
-                errors_0[m] = errors_0[m - 1];
-                errors_1[m] = errors_1[m - 1];
-                errors_2[m] = errors_2[m - 1];
-            }
-            errors_0[0] = final_color[0] - old_target_color[0];
-            errors_1[0] = final_color[1] - old_target_color[1];
-            errors_2[0] = final_color[2] - old_target_color[2];
+            filter0_error=filter0.filter(final_color[0] - old_target_color[0]);
+            filter1_error=filter1.filter(final_color[1] - old_target_color[1]);
+            filter2_error=filter2.filter(final_color[2] - old_target_color[2]);
         }
     }
 

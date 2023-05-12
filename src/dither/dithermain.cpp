@@ -1,3 +1,4 @@
+#include <cmath>
 #include <cstring>
 #include <iostream>
 #include <sstream>
@@ -17,14 +18,15 @@
 #include "dither.h"
 #include "ppm.h"
 
-
-
 int main(int argc, char* argv[]) {
     const char* color_palette = "12";
     const char* filen = "input.png";
     const char* out = "dither";
     algorithm a = errordiffuse;
     dither_settings settings {};
+    set_dither_defaults(settings);
+    oklab_settings color_settings {};
+    set_oklab_defaults(color_settings);
     bool showimg = false;
     bool schng = false;
     printf("Dithering Engine version %d.%2.2d\n", DITHERING_ENGINE_VERSION_MAJOR, DITHERING_ENGINE_VERSION_MINOR);
@@ -69,16 +71,28 @@ int main(int argc, char* argv[]) {
                 return 1;
             }
         }
+        else if (std::string(argv[i]) == "-f") {
+            std::string dt = argv[++i];
+            if (dt.compare("ramp") == 0) {
+                settings.errorFilter = filter_ramp;
+            }
+            else if (dt.compare("decimate") == 0) {
+                settings.errorFilter = filter_decimate;
+            }
+            schng = true;
+        }
         else if (std::string(argv[i]) == "-p") {
             std::string dt = argv[++i];
             if (dt.compare("alien") == 0) {
-                settings.l_offset = -0.3f;
-                settings.l_scale = 2.5f;
-                settings.hue_phase = 0.825f;
+                color_settings.l_offset = -0.3f;
+                color_settings.l_scale = 2.5f;
+                color_settings.hue_cos_scale = std::cos(.825f);
+                color_settings.hue_sin_scale = std::sin(.825f);
             }
             else if (dt.compare("invert") == 0) {
-                settings.l_scale = -1.0f;
-                settings.hue_scale = -1.0;
+                color_settings.l_scale = -1.0f;
+                color_settings.hue_cos_scale = -1.0;
+                color_settings.hue_sin_scale = 0.0;
             }
             settings.dither_intensity = 0.75;
             settings.stalg = a;
@@ -98,6 +112,7 @@ int main(int argc, char* argv[]) {
     auto input_color_space = get_color_space(RGB);
     auto palette_color_space = get_color_space(RGB);
     auto dither_color_space = get_color_space(OKLAB); 
+    dither_color_space->settings.oklab = color_settings;
     auto output_color_space = get_color_space(RGB); 
 
     auto palette_to_dither_color_space_converter = get_color_space_converter(palette_color_space, dither_color_space);
@@ -111,7 +126,6 @@ int main(int argc, char* argv[]) {
     palette_info palette;
     load_palette("palette.ppm", *palette_to_dither_color_space_converter, palette);
 
-    if(!schng) set_dither_defaults(settings);
     if (a != errordiffuse) {
         settings.stalg = a;
     }

@@ -27,6 +27,10 @@ enum color_space_type {
     OKLAB = 1
 };
 
+void set_rgb_defaults(rgb_settings& settings);
+
+void set_oklab_defaults(oklab_settings &settings);
+ 
 struct color_space {
     color_space_type type;
     union {
