@@ -1,0 +1,244 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1,
+						3
+					],
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-.-Release-d0094a50bb2071803777.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.10"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1
+					]
+				},
+				{
+					"build" : "include",
+					"childIndexes" : 
+					[
+						2
+					],
+					"jsonFile" : "directory-include-Release-d173e0f0f2f3c2971879.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.10"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "include"
+				},
+				{
+					"build" : "include/dither_library",
+					"jsonFile" : "directory-include.dither_library-Release-536e95b6157862e2b4db.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.10"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 0,
+					"source" : "include/dither_library"
+				},
+				{
+					"build" : "src",
+					"childIndexes" : 
+					[
+						4,
+						5,
+						6,
+						7,
+						8
+					],
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-src-Release-bc6e5a54b3e0d2a40a46.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.10"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "src"
+				},
+				{
+					"build" : "src/dither",
+					"jsonFile" : "directory-src.dither-Release-5c27b01ae7fd3ce2da46.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.10"
+					},
+					"parentIndex" : 3,
+					"projectIndex" : 0,
+					"source" : "src/dither",
+					"targetIndexes" : 
+					[
+						2
+					]
+				},
+				{
+					"build" : "src/dither_library",
+					"jsonFile" : "directory-src.dither_library-Release-2ff09f95f98cda18dd5f.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.10"
+					},
+					"parentIndex" : 3,
+					"projectIndex" : 0,
+					"source" : "src/dither_library",
+					"targetIndexes" : 
+					[
+						3
+					]
+				},
+				{
+					"build" : "src/make-palette",
+					"jsonFile" : "directory-src.make-palette-Release-f3a237633624ad41723d.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.10"
+					},
+					"parentIndex" : 3,
+					"projectIndex" : 0,
+					"source" : "src/make-palette",
+					"targetIndexes" : 
+					[
+						4
+					]
+				},
+				{
+					"build" : "src/subpixeler",
+					"jsonFile" : "directory-src.subpixeler-Release-6a61b8102dd29baae2c5.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.10"
+					},
+					"parentIndex" : 3,
+					"projectIndex" : 0,
+					"source" : "src/subpixeler",
+					"targetIndexes" : 
+					[
+						5
+					]
+				},
+				{
+					"build" : "src/testoklab",
+					"jsonFile" : "directory-src.testoklab-Release-e5d72492b52703d94f29.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.10"
+					},
+					"parentIndex" : 3,
+					"projectIndex" : 0,
+					"source" : "src/testoklab",
+					"targetIndexes" : 
+					[
+						6
+					]
+				}
+			],
+			"name" : "Release",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5,
+						6,
+						7,
+						8
+					],
+					"name" : "DitheringEngine",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5,
+						6
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "ALL_BUILD::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-ALL_BUILD-Release-ddefb0beeaa296134ca5.json",
+					"name" : "ALL_BUILD",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "ZERO_CHECK::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-ZERO_CHECK-Release-c0f125241567ab9a411d.json",
+					"name" : "ZERO_CHECK",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 4,
+					"id" : "dither::@594665542dc5c99c8f52",
+					"jsonFile" : "target-dither-Release-7ead50bd8f3f777519ae.json",
+					"name" : "dither",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 5,
+					"id" : "dithering::@d2429dbf5dd862586de8",
+					"jsonFile" : "target-dithering-Release-6e826c9541a99157c205.json",
+					"name" : "dithering",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 6,
+					"id" : "make-palette::@040e752ecd90e1ea73f6",
+					"jsonFile" : "target-make-palette-Release-5690405df4d292f1bf6f.json",
+					"name" : "make-palette",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 7,
+					"id" : "subpixeler::@b5b56c504a24103129f6",
+					"jsonFile" : "target-subpixeler-Release-df49096a5819edb5fc9b.json",
+					"name" : "subpixeler",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 8,
+					"id" : "testoklab::@39958e57c01a862968bd",
+					"jsonFile" : "target-testoklab-Release-dc4d7895a1b242eb7206.json",
+					"name" : "testoklab",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "D:/visualstudioprods/Dither/build",
+		"source" : "D:/visualstudioprods/Dither"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 4
+	}
+}

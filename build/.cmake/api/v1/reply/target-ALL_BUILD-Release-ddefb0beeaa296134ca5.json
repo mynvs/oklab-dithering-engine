@@ -1,0 +1,48 @@
+{
+	"backtrace" : 0,
+	"backtraceGraph" : 
+	{
+		"commands" : [],
+		"files" : 
+		[
+			"CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			}
+		]
+	},
+	"dependencies" : 
+	[
+		{
+			"id" : "dither::@594665542dc5c99c8f52"
+		},
+		{
+			"id" : "dithering::@d2429dbf5dd862586de8"
+		},
+		{
+			"id" : "make-palette::@040e752ecd90e1ea73f6"
+		},
+		{
+			"id" : "subpixeler::@b5b56c504a24103129f6"
+		},
+		{
+			"id" : "testoklab::@39958e57c01a862968bd"
+		},
+		{
+			"id" : "ZERO_CHECK::@6890427a1f51a3e7e1df"
+		}
+	],
+	"id" : "ALL_BUILD::@6890427a1f51a3e7e1df",
+	"isGeneratorProvided" : true,
+	"name" : "ALL_BUILD",
+	"paths" : 
+	{
+		"build" : ".",
+		"source" : "."
+	},
+	"sources" : [],
+	"type" : "UTILITY"
+}

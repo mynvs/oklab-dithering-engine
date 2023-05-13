@@ -7,10 +7,7 @@
       "inheritEnvironments": [ "msvc_x64_x64" ],
       "buildRoot": "${projectDir}\\build",
       "installRoot": "${projectDir}",
-      "cmakeCommandArgs": "",
-      "buildCommandArgs": "",
-      "ctestCommandArgs": "",
-      "intelliSenseMode": "windows-msvc-x64"
+      "ctestCommandArgs": ""
     }
   ]
 }

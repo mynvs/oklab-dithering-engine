@@ -27,5 +27,7 @@ void dither(const dither_settings& settings,
             int width,
             int height);
 
+
+int initdither(const char* color_palette, const char* filen, const char* out, algorithm a, dither_settings settings, bool schng);
 #endif
 

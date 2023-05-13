@@ -3,6 +3,8 @@
 #include <iostream>
 #include <sstream>
 #include <filesystem>
+#include <algorithm>
+#include <vector>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -29,7 +31,10 @@ int main(int argc, char* argv[]) {
     set_oklab_defaults(color_settings);
     bool showimg = false;
     bool schng = false;
-    printf("Dithering Engine version %d.%2.2d\n", DITHERING_ENGINE_VERSION_MAJOR, DITHERING_ENGINE_VERSION_MINOR);
+    bool useallpalettes = false;
+    std::vector<std::string> palettes;
+
+    printf("Dithering Engine \u001b[90mv\u001b[34;1m%d.%2.2d\u001b[0m\n", DITHERING_ENGINE_VERSION_MAJOR, DITHERING_ENGINE_VERSION_MINOR);
     for (int i = 1; i < argc; i++)
     {
         if (std::string(argv[i]) == "-i")
@@ -39,8 +44,7 @@ int main(int argc, char* argv[]) {
         else if (std::string(argv[i]) == "-c")
         {
             struct stat buffer {};
-            std::stringstream ext;
-            ext <<"palettes/"<<argv[++i]<<".png";
+            std::stringstream ext; ext <<"palettes/"<<argv[++i]<<".png";
             if (stat(ext.str().c_str(), &buffer) == 0) {
                 color_palette = argv[i];
                 printf("Using \u001b[90m\"\u001b[0m%s\u001b[90m\"\u001b[0m\u001b[3m color palette\u001b[0m.\n", argv[i]);
@@ -101,7 +105,51 @@ int main(int argc, char* argv[]) {
         else if (std::string(argv[i]) == "--show") {
             showimg = true;
         }
+        else if (std::string(argv[i]) == "--allp") {
+            useallpalettes = true;
+            for (const auto& entry : std::filesystem::directory_iterator("palettes")) {
+                palettes.push_back(entry.path().stem().string());
+            }
+            std::sort(palettes.begin(), palettes.end());
+        }
     }
+
+    if (!useallpalettes) {
+        int r = initdither(color_palette, filen, out, a, settings, schng);
+        if (r == 1) {
+            printf("Dither \u001b[31mfailed\u001b[0m.\n");
+            return 2;
+        }
+        if (showimg) {
+            std::stringstream sh; sh << out << ".png";
+            system(sh.str().c_str());
+        }
+    }
+    else {
+        int sz = palettes.size();
+        printf("Palettes: \u001b[90m%d\u001b[0m\n\n", sz);
+        for (int i = 0; i < sz; i++) {
+            printf("Dithering with palette \u001b[90m\"\u001b[0m%s\u001b[90m\"\u001b[0m\n", palettes[i].c_str());
+            struct stat buffer {};
+            std::filesystem::create_directory("burstdither");
+            std::stringstream outd; outd << "./burstdither/" << palettes[i].c_str();
+            int r = initdither(palettes[i].c_str(), filen, outd.str().c_str(), a, settings, schng);
+            if (r == 1) {
+                printf("Dither \u001b[31mfailed\u001b[0m.\n");
+                return 2;
+            }
+        }
+        if (showimg) {
+#ifdef _WIN32
+            system("explorer burstdither");
+#endif
+        }
+    }
+    
+    return 0;
+}
+
+int initdither(const char* color_palette, const char* filen, const char* out, algorithm a, dither_settings settings, bool schng) {
 
     struct stat buffer {};
     if (std::string(filen) == "input.png" && ~stat("./input.png", &buffer) == 0) {
@@ -111,6 +159,8 @@ int main(int argc, char* argv[]) {
 
     auto input_color_space = get_color_space(RGB);
     auto palette_color_space = get_color_space(RGB);
+    auto dither_color_space = get_color_space(OKLAB);
+    auto output_color_space = get_color_space(RGB);
     auto dither_color_space = get_color_space(OKLAB); 
     dither_color_space->settings.oklab = color_settings;
     auto output_color_space = get_color_space(RGB); 
@@ -119,13 +169,16 @@ int main(int argc, char* argv[]) {
     auto input_to_dither_color_space_converter = get_color_space_converter(input_color_space, dither_color_space);
     auto dither_to_output_color_space_converter = get_color_space_converter(dither_color_space, output_color_space);
 
-    std::stringstream palette_cmd;
-    palette_cmd << "ffmpeg -loglevel quiet -i \"palettes/" << color_palette << ".png\" palette.ppm -y";
+    std::stringstream palette_cmd; palette_cmd << "ffmpeg -loglevel quiet -i \"palettes/" << color_palette << ".png\" palette.ppm -y";
     system(palette_cmd.str().c_str());
 
     palette_info palette;
     load_palette("palette.ppm", *palette_to_dither_color_space_converter, palette);
 
+<<<<<<< HEAD
+    if (!schng) set_dither_defaults(settings);
+=======
+>>>>>>> 53e8126a9babf0df2acf5cc688bc63fe2bd19474
     if (a != errordiffuse) {
         settings.stalg = a;
     }
@@ -138,23 +191,16 @@ int main(int argc, char* argv[]) {
     image_buffer_t output_image = create_image_buffer(file_info.width, file_info.height);
 
     dither(settings,
-           input_image,
-           output_image,
-           *input_to_dither_color_space_converter,
-           *dither_to_output_color_space_converter,
-           palette,
-           file_info.width,
-           file_info.height);
+        input_image,
+        output_image,
+        *input_to_dither_color_space_converter,
+        *dither_to_output_color_space_converter,
+        palette,
+        file_info.width,
+        file_info.height);
 
     save_ppm_image("dither_output.ppm", file_info, output_image);
-    std::stringstream df;
-    df << "ffmpeg -loglevel quiet -i dither_output.ppm " << out << ".png -y && " << DEL << " *.ppm";
+    std::stringstream df; df << "ffmpeg -loglevel quiet -i dither_output.ppm " << out << ".png -y && " << DEL << " *.ppm";
     system(df.str().c_str());
-    
-    if (showimg) {
-        std::stringstream sh;
-        sh << out << ".png";
-        system(sh.str().c_str());
-    }
     return 0;
 }
