@@ -175,10 +175,7 @@ int initdither(const char* color_palette, const char* filen, const char* out, al
     palette_info palette;
     load_palette("palette.ppm", *palette_to_dither_color_space_converter, palette);
 
-<<<<<<< HEAD
     if (!schng) set_dither_defaults(settings);
-=======
->>>>>>> 53e8126a9babf0df2acf5cc688bc63fe2bd19474
     if (a != errordiffuse) {
         settings.stalg = a;
     }
