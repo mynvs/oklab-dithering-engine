@@ -1,3 +1,2 @@
-// the configured options and settings for Tutorial
 #define DITHERING_ENGINE_VERSION_MAJOR @DitheringEngine_VERSION_MAJOR@
 #define DITHERING_ENGINE_VERSION_MINOR @DitheringEngine_VERSION_MINOR@

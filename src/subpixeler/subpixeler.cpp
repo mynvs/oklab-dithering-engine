@@ -2,9 +2,29 @@
 #include <cmath>
 #include <cstring>
 #include <sstream>
+#ifdef _WIN32
+#define DEL "del"
+#else
+#define DEL "rm"
+#endif
 
-int main() {
-    system("ffmpeg -loglevel quiet -i input.png subpixel_input.ppm -y");
+int main(int argc, char* argv[]) {
+    const char* filen = "input.png";
+    const char* out = "input.png";
+    for (int i = 1; i < argc; i++)
+    {
+        if (std::string(argv[i]) == "-i")
+        {
+            filen = argv[++i];
+        }
+        else if (std::string(argv[i]) == "-o")
+        {
+            out = argv[++i];
+        }
+    }
+
+    std::stringstream rf; rf << "ffmpeg -loglevel quiet -i " << filen << " subpixel_input.ppm -y";
+    system(rf.str().c_str());
     std::ifstream input1("subpixel_input.ppm", std::ios_base::binary);
 
     char magic_num1[3];
@@ -28,16 +48,9 @@ int main() {
 
         if (i%width1 >= temp_x-1) {
             if (overhang_x == 1) {
-                input1.get();
-                input1.get();
-                input1.get();
+                input1.get(); input1.get();input1.get();
             } else if (overhang_x == 2) {
-                input1.get();
-                input1.get();
-                input1.get();
-                input1.get();
-                input1.get();
-                input1.get();
+                input1.get(); input1.get(); input1.get(); input1.get(); input1.get(); input1.get();
             }
         }
 
@@ -108,7 +121,8 @@ int main() {
     output.close();
     input.close();
 
-    system("ffmpeg -loglevel quiet -i subpixel_output.ppm input.png -y && del *.ppm");
+    std::stringstream dv; dv << "ffmpeg -loglevel quiet -i subpixel_output.ppm " << out << " -y &&"<< DEL <<" *.ppm";
+    system(dv.str().c_str());
 
     return 0;
 }
