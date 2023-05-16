@@ -4,6 +4,7 @@
 #include <vector>
 #include "pocketfft_hdronly.h"
 
+
 std::shared_ptr<std::vector<float>> blackmanWindow(unsigned int size) {
     auto returnBuffer = std::make_shared<std::vector<float>>();
     for(unsigned i=0; i<size; ++i) {
@@ -144,7 +145,7 @@ std::shared_ptr<std::vector<float>> decimationFilter(const int numberOfTaps,
 
     //Reverse filter.
     if(halfFilter) {
-        int size = halfWidth - std::floor(offset);
+        int size = buffer.size()/2 - std::floor(offset);
         for(int i=size-1; i>=0; --i) {
             returnBuffer->push_back( buffer[i] );
         }
@@ -153,7 +154,6 @@ std::shared_ptr<std::vector<float>> decimationFilter(const int numberOfTaps,
             returnBuffer->push_back( buffer[i] );
         }
     }
-
     return returnBuffer;
 }
 

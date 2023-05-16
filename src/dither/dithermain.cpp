@@ -78,6 +78,8 @@ int main(int argc, char* argv[]) {
             }
             else if (dt.compare("decimate") == 0) {
                 settings.errorFilter = filter_decimate;
+                settings.dither_intensity = 1.0;
+
             }
             schng = true;
         }
