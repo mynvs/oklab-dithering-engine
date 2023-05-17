@@ -1,4 +1,7 @@
+#define _USE_MATH_DEFINES
+#include <math.h>
 #include <cmath>
+
 #include <iterator>
 #include <memory>
 #include <vector>
