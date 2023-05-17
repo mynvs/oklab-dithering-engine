@@ -5,17 +5,6 @@
 #include <cstdio>
 #include "float_rectangle.h"
 
-#if __cplusplus < 201703L
-namespace std {
-    template<typename T, typename... Args>
-    std::unique_ptr<T> make_unique(Args&&... args)
-    {
-        return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
-    }
-}
-#endif
-
-
 FloatRectangle::FloatRectangle(unsigned width, unsigned height) {
     this->width = width;
     this->height = height;
