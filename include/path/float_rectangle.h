@@ -40,7 +40,12 @@ class FloatRectangle {
             return width*height;
         }
 
-        float get(unsigned offset) {
+         float get(unsigned offset) {
+            assert(offset < this->getPixels());
+            return (*buffer)[offset];
+        }
+
+        float &getForModification(unsigned offset) {
             assert(offset < this->getPixels());
             return (*buffer)[offset];
         }

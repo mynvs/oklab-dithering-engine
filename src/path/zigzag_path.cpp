@@ -10,13 +10,13 @@ void ZigZagPath::advance(std::shared_ptr<FloatRectangle> rectangle, int &current
 
         int y = rectangle->getY(currentOffset);
         int x = rectangle->getX(currentOffset);
-        if ((direction == up_right) && (x==rectangle->width-1)) {
+        if ((direction == up_right) && (x==(int)rectangle->width-1)) {
             y+=1;
             direction = down_left;
         } else if((direction == up_right) && (y==0)) {
             x+=1;
             direction = down_left;
-        } else if((direction == down_left) && (y==rectangle->height-1)) {
+        } else if((direction == down_left) && (y==(int)rectangle->height-1)) {
             x+=1;
             direction = up_right;
         } else if ((direction == down_left) && (x==0)) {

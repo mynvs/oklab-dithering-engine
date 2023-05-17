@@ -19,7 +19,7 @@ class RecursiveSpaceFillingPath: public Path {
     public:
         RecursiveSpaceFillingPath(const RecursiveSpaceFillingCurve * const curve);
 
-        RecursiveSpaceFillingPath(RecursiveSpaceFillingPath &other);
+        RecursiveSpaceFillingPath(const RecursiveSpaceFillingPath &other);
 
         std::shared_ptr<FloatRectangle> pad(std::shared_ptr<FloatRectangle> source) override;
 
@@ -29,7 +29,7 @@ class RecursiveSpaceFillingPath: public Path {
 
         virtual void advance(std::shared_ptr<FloatRectangle> rectangle, int &currentOffset) override;
 
-        virtual std::unique_ptr<Path> clone() override {
+        virtual std::unique_ptr<Path> clone() const override {
             return std::make_unique<RecursiveSpaceFillingPath>(*this);
         }
 

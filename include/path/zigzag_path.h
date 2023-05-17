@@ -12,7 +12,7 @@ class ZigZagPath: public Path {
 
         void advance(std::shared_ptr<FloatRectangle> rectangle, int &currentOffset) override;
 
-        std::unique_ptr<Path> clone() {
+        std::unique_ptr<Path> clone() const {
             auto returnValue = std::make_unique<ZigZagPath>();
             returnValue->direction = direction;
             return returnValue;

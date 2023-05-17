@@ -10,11 +10,11 @@
 
 void walk(PathIterator &iterator) {
     int counter =0;
-    
+
     do {
         printf("%u, %u\n", iterator.getX(), iterator.getY());
         counter ++;    
-        if (counter > iterator.getRectangle()->width * iterator.getRectangle()->height) {
+        if (counter > (int)(iterator.getRectangle()->width * iterator.getRectangle()->height)) {
             printf("TOO MANY STEPS\n");
             break;
         }
@@ -33,10 +33,10 @@ int main() {
     }
     #endif
 
-    std::shared_ptr<FloatRectangle> rectangle = std::make_shared<FloatRectangle>(8, 8);
+    std::shared_ptr<FloatRectangle> rectangle = std::make_shared<FloatRectangle>(1024, 1024);
 
     PathIterator pathIterator;
-
+    /*
     printf("Sequential\n");
     pathIterator = PathIterator(rectangle, std::make_unique<SequentialPath>());
     walk(pathIterator);
@@ -62,15 +62,18 @@ int main() {
     printf("-------------------------\n");
     pathIterator = PathIterator(rectangle, std::make_unique<RecursiveSpaceFillingPath>(&murrayPolygonCurve));
     walk(pathIterator);
+    */
 
     printf("Hilbert Curve\n");
     printf("-------------------------\n");
     pathIterator = PathIterator(rectangle, std::make_unique<RecursiveSpaceFillingPath>(&hilbertCurve));
     walk(pathIterator);
-
+    
+    /*
     printf("Moore Curve\n");
     printf("-------------------------\n");
     pathIterator = PathIterator(rectangle, std::make_unique<RecursiveSpaceFillingPath>(&mooreCurve));
     walk(pathIterator);
+    */
 }
 

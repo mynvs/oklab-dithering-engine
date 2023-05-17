@@ -32,10 +32,10 @@ FloatRectangle::FloatRectangle(FloatRectangle& other, Padding padding) {
     paddingStack = other.paddingStack;
     paddingStack.push_back(padding);
 
-    for(int rowIndex=0; rowIndex < other.height; ++rowIndex) {
+    for(unsigned rowIndex=0; rowIndex < other.height; ++rowIndex) {
         unsigned source = other.getOffset(0, rowIndex);
         unsigned destination = this->getOffset(padding.left, rowIndex + padding.top);
-        for(int x=0; x< other.width; ++x) {
+        for(unsigned x=0; x< other.width; ++x) {
             this->set(destination+x, other.get(source+x));
         }
     }
@@ -56,8 +56,8 @@ void FloatRectangle::depad() {
                 (*newBuffer)[offset++] = this->get(column, row);
             }
         }
-        width = newWidth;
-        height = newHeight;
+        this->width = newWidth;
+        this->height = newHeight;
         buffer = std::move(newBuffer);
     }
 }

@@ -17,6 +17,7 @@
 
 #include "DitherEngineConfig.h"
 #include "color_space.h"
+#include "path_choices.h"
 #include "dither.h"
 #include "ppm.h"
 
@@ -33,6 +34,8 @@ int main(int argc, char* argv[]) {
     bool schng = false;
     bool useallpalettes = false;
     std::vector<std::string> palettes;
+    std::string pathname = "sequential";
+
 
     printf("Dithering Engine \u001b[90mv\u001b[34;1m%d.%2.2d\u001b[0m\n", DITHERING_ENGINE_VERSION_MAJOR, DITHERING_ENGINE_VERSION_MINOR);
     for (int i = 1; i < argc; i++)
@@ -114,10 +117,41 @@ int main(int argc, char* argv[]) {
             }
             std::sort(palettes.begin(), palettes.end());
         }
+        else if (std::string(argv[i]) == "--path") {
+            if(i+1 < argc) {
+                pathname = argv[++i];
+                schng = true;
+            } else { 
+                pathname = "";
+            }
+        }
     }
 
+    std::unique_ptr<Path> path = get_path(pathname.c_str());
+    if(path != NULL) {
+        settings.dither_path = std::move(path);
+    } else {
+        int pathCounter =0;
+        printf("Invalid path chosen. Valid paths are:\n");
+        const char * foundName = path_choices[pathCounter].name;
+        while(foundName != NULL) {
+            printf("\t%s\n", foundName); 
+            pathCounter += 1;
+            foundName = path_choices[pathCounter].name;
+        }
+        printf("\n");
+        exit(1);
+    }
+
+    printf("Using path %s\n", pathname.c_str());
+             
+
+
+    auto dither_color_space = get_color_space(OKLAB); 
+    dither_color_space->settings.oklab = color_settings;
+
     if (!useallpalettes) {
-        int r = initdither(color_palette, filen, out, a, settings, schng);
+        int r = initdither(color_palette, filen, out, a, settings, dither_color_space, schng);
         if (r == 1) {
             printf("Dither \u001b[31mfailed\u001b[0m.\n");
             return 2;
@@ -135,7 +169,7 @@ int main(int argc, char* argv[]) {
             struct stat buffer {};
             std::filesystem::create_directory("burstdither");
             std::stringstream outd; outd << "./burstdither/" << palettes[i].c_str();
-            int r = initdither(palettes[i].c_str(), filen, outd.str().c_str(), a, settings, schng);
+            int r = initdither(palettes[i].c_str(), filen, outd.str().c_str(), a, settings, dither_color_space, schng);
             if (r == 1) {
                 printf("Dither \u001b[31mfailed\u001b[0m.\n");
                 return 2;
@@ -151,7 +185,13 @@ int main(int argc, char* argv[]) {
     return 0;
 }
 
-int initdither(const char* color_palette, const char* filen, const char* out, algorithm a, dither_settings settings, bool schng) {
+int initdither(const char* color_palette, 
+               const char* filen,
+               const char* out, 
+               algorithm a,
+               dither_settings &settings,
+               std::shared_ptr<color_space> dither_color_space,
+               bool schng) {
 
     struct stat buffer {};
     if (std::string(filen) == "input.png" && ~stat("./input.png", &buffer) == 0) {
@@ -161,10 +201,6 @@ int initdither(const char* color_palette, const char* filen, const char* out, al
 
     auto input_color_space = get_color_space(RGB);
     auto palette_color_space = get_color_space(RGB);
-    auto dither_color_space = get_color_space(OKLAB);
-    auto output_color_space = get_color_space(RGB);
-    auto dither_color_space = get_color_space(OKLAB); 
-    dither_color_space->settings.oklab = color_settings;
     auto output_color_space = get_color_space(RGB); 
 
     auto palette_to_dither_color_space_converter = get_color_space_converter(palette_color_space, dither_color_space);

@@ -7,7 +7,7 @@ class SequentialPath: public Path {
     public:
         using Path::Path; //Inherit constructor
 
-        std::unique_ptr<Path> clone() {
+        std::unique_ptr<Path> clone() const {
             return std::make_unique<SequentialPath>();
         }
 };
@@ -20,7 +20,7 @@ class BidiSequentialPath: public Path {
         using Path::Path; //Inherit constructor
         void advance(std::shared_ptr<FloatRectangle> rectangle, int &current_offset) override;
 
-        std::unique_ptr<Path> clone() {
+        std::unique_ptr<Path> clone() const {
             return std::make_unique<BidiSequentialPath>();
         }
 };

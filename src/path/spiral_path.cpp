@@ -6,7 +6,7 @@ SpiralPath::SpiralPath() {
     inset = 0;
 }
 
-SpiralPath::SpiralPath(SpiralPath &other) {
+SpiralPath::SpiralPath(const SpiralPath &other) {
     this->direction = other.direction;
     this->inset = inset;
 }
@@ -41,9 +41,9 @@ void SpiralPath::advance(std::shared_ptr<FloatRectangle> rectangle, int &current
 
         switch(direction) {
             case right:
-                if (x<rectangle->width-1-inset) {
+                if (x<(int)rectangle->width-1-inset) {
                     x+=1;
-                    if(x >= rectangle->width-1-inset) {
+                    if(x >= (int)rectangle->width-1-inset) {
                        direction = down;
                     }
                 } else {    
@@ -52,9 +52,9 @@ void SpiralPath::advance(std::shared_ptr<FloatRectangle> rectangle, int &current
                 break;
 
             case down:
-                if(y < rectangle->height-1-inset) {
+                if(y < (int)rectangle->height-1-inset) {
                     y+=1;
-                    if(y >= rectangle->height-1-inset) {
+                    if(y >= (int)rectangle->height-1-inset) {
                         direction = left;
                     }
                 } else {
@@ -102,7 +102,7 @@ DoubleSpiralPath::DoubleSpiralPath(): SpiralPath() {
     stepOffset = 0;
 }
 
-DoubleSpiralPath::DoubleSpiralPath(DoubleSpiralPath &other) : SpiralPath(other) {
+DoubleSpiralPath::DoubleSpiralPath(const DoubleSpiralPath &other) : SpiralPath(other) {
     this->turnDirection = other.turnDirection;
     this->stepOffset = other.stepOffset;
 }
@@ -115,9 +115,9 @@ void DoubleSpiralPath::advance(std::shared_ptr<FloatRectangle> rectangle, int &c
 
         switch(direction) {
             case right:
-                if (x<rectangle->width-1-inset) {
+                if (x<(int)rectangle->width-1-inset) {
                     x+=1;
-                    if(x >= rectangle->width-1-inset) {
+                    if(x >= (int)rectangle->width-1-inset) {
                         if(turnDirection==1) {
                             inset += 1;
                         }
@@ -130,9 +130,9 @@ void DoubleSpiralPath::advance(std::shared_ptr<FloatRectangle> rectangle, int &c
                 break;
 
             case down:  
-                if(y < rectangle->height-1-inset) {
+                if(y < (int)rectangle->height-1-inset) {
                     y+=1;
-                    if(y >= rectangle->height-1-inset) {
+                    if(y >= (int)rectangle->height-1-inset) {
                         if(turnDirection==-1) {
                             inset -= 1;
                         }
@@ -182,11 +182,11 @@ void DoubleSpiralPath::advance(std::shared_ptr<FloatRectangle> rectangle, int &c
                 break;
         }
         stepOffset+=1;
-        if((turnDirection == 1) && (stepOffset+1 >= (rectangle->width * rectangle->height)/2)) {
+        if((turnDirection == 1) && (stepOffset+1 >= (int)(rectangle->width * rectangle->height)/2)) {
             turnDirection = -1;
             inset -= 1;
         }
-        if((x<0) || (y<0) || (x>=rectangle->width) || (y>=rectangle->height)) {
+        if((x<0) || (y<0) || (x>=(int)rectangle->width) || (y>=(int)rectangle->height)) {
             direction = done;
         }
         currentOffset = rectangle->getOffset(x, y);           
@@ -200,10 +200,10 @@ std::shared_ptr<FloatRectangle> DoubleSpiralPath::pad(std::shared_ptr<FloatRecta
     if ((smaller & 1) == 0) {
 
         //Sometimes both are even and the same size. In that case both have to be bumped,
-        if (source->width == smaller) {
+        if ((int)source->width == smaller) {
             padding.right = 1;
         }
-        if (source->height == smaller) {
+        if ((int)source->height == smaller) {
             padding.bottom = 1; 
         }
     }

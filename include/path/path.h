@@ -15,7 +15,7 @@ class Path {
 
         virtual int startingOffset(std::shared_ptr<FloatRectangle> rectangle) const;
 
-        virtual std::unique_ptr<Path> clone() {
+        virtual std::unique_ptr<Path> clone() const {
             return std::make_unique<Path>();
         }
 };

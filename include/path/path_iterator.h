@@ -3,13 +3,14 @@
 
 #include <memory>
 #include "path.h"
+#include "path_choices.h"
 #include "float_rectangle.h"
 #include "sequential_path.h"
 
 class PathIterator {    
     protected:
         std::shared_ptr<FloatRectangle> rectangle=NULL;
-        std::unique_ptr<Path> path;
+        std::unique_ptr<Path> path=NULL;
         int currentIndex;
 
     public:
@@ -21,7 +22,7 @@ class PathIterator {
 
         PathIterator() {
             rectangle = NULL;
-            path=std::make_unique<SequentialPath>();
+            path=get_path("sequential");
             currentIndex=0; 
         }
  
@@ -44,7 +45,7 @@ class PathIterator {
             return rectangle->getY(currentIndex);
         }
 
-        float operator*() const;
+        float &operator*();
 
         float *operator->();
        

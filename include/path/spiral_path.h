@@ -9,13 +9,13 @@ enum Direction { right=0, down=1, left=2, up=3, last=4, done=5 };
 class SpiralPath: public Path { 
     protected:
         enum Direction direction;
-        unsigned inset = 0;
+        int inset = 0;
 
        
     public:
         SpiralPath();
 
-        SpiralPath(SpiralPath &other);
+        SpiralPath(const SpiralPath &other);
 
         virtual std::shared_ptr<FloatRectangle> pad(std::shared_ptr<FloatRectangle> source) override;
 
@@ -23,7 +23,7 @@ class SpiralPath: public Path {
  
         virtual void advance(std::shared_ptr<FloatRectangle> rectangle, int &currentOffset) override;
 
-        virtual std::unique_ptr<Path> clone() override {
+        virtual std::unique_ptr<Path> clone() const override {
             return std::make_unique<SpiralPath>(*this);
         }
 
@@ -33,18 +33,18 @@ class SpiralPath: public Path {
 class DoubleSpiralPath: public SpiralPath {
     protected:
         int turnDirection;
-        unsigned stepOffset =0;
+        int stepOffset =0;
 
     public:
         DoubleSpiralPath();
 
-        DoubleSpiralPath(DoubleSpiralPath &other);
+        DoubleSpiralPath(const DoubleSpiralPath &other);
 
         virtual void advance(std::shared_ptr<FloatRectangle> rectangle, int &currentOffset) override;
                                     
         virtual std::shared_ptr<FloatRectangle> pad(std::shared_ptr<FloatRectangle> source) override;
 
-        virtual std::unique_ptr<Path> clone() override {
+        virtual std::unique_ptr<Path> clone() const override {
             return std::make_unique<DoubleSpiralPath>(*this);
         }
 };

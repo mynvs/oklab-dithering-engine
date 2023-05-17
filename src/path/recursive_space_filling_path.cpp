@@ -6,7 +6,7 @@ RecursiveSpaceFillingPath::RecursiveSpaceFillingPath(const RecursiveSpaceFilling
     doneFlag = false;
 }
 
-RecursiveSpaceFillingPath::RecursiveSpaceFillingPath(RecursiveSpaceFillingPath &other) {
+RecursiveSpaceFillingPath::RecursiveSpaceFillingPath(const RecursiveSpaceFillingPath &other) {
     this->curve = other.curve;
     this->tilingLevel = other.tilingLevel;
     this->doneFlag = other.doneFlag;
@@ -55,7 +55,7 @@ void RecursiveSpaceFillingPath::advance(std::shared_ptr<FloatRectangle> rectangl
 
         currentOffset = rectangle->getOffset(x, y);           
     }
-};
+}
 
 Coordinate2D<int> RecursiveSpaceFillingPath::mirrorDirection(const Coordinate2D<int> newDirection) {
     if(newDirection.x == INT_MAX) {
