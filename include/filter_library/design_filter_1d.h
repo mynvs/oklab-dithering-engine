@@ -13,6 +13,8 @@ std::shared_ptr<std::vector<float>> decimationFilter(const int numberOfTaps,
                                                      float &flatness,
                                                      int &cornerDistance);
 
+std::shared_ptr<std::vector<float>> designDecimationFilter(float decimationRatio, unsigned &filterDelay);
+ 
 std::shared_ptr<std::vector<float>> designHalfDecimationFilter(float decimationRatio);
 
 #endif

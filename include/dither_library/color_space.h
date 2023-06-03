@@ -15,6 +15,13 @@ struct oklab_settings {
     float hue_sin_scale;
     float a_offset;
     float b_offset;
+
+    //These are chosen to set how important hue / chroma / luminance
+    //relative to each other
+    float hue_distance_weight;
+    float chroma_distance_weight;
+    float luminance_distance_weight;
+
 };
 
 
@@ -33,6 +40,7 @@ void set_oklab_defaults(oklab_settings &settings);
  
 struct color_space {
     color_space_type type;
+    float (*distance)(const color_space *color_space, float colorA[3], float colorB[3]);
     union {
         oklab_settings oklab;
         rgb_settings rgb;
@@ -41,7 +49,7 @@ struct color_space {
 
 struct color_space_converter {
     void (*convert)(const color_space_converter &converter, const float source_color[3], float destination_color[3]);
-    void (*post_process)(const color_space &color_space, float color[3]); 
+    void (*post_process)(const color_space &color_space, float color[3]);
     std::shared_ptr<color_space> source;
     std::shared_ptr<color_space> destination;
 };

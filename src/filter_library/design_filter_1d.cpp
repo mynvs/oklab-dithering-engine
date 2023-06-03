@@ -57,8 +57,8 @@ std::shared_ptr<std::vector<float>> decimationFilter(const int numberOfTaps,
             if (halfFilter) {
                 buffer.push_back( 0.0 );
             } else {
-                x = numberOfTaps - x;
-                buffer.push_back( sinc( inverseDecimation * x ) * inverseDecimation * (*window)[i - numberOfTaps/2] );
+                x = (float)i+offset -numberOfTaps;
+                buffer.push_back( sinc( inverseDecimation * x ) * inverseDecimation * (*window)[i - (int)(std::ceil(((float)numberOfTaps)/2))] );
             }
         }
     }
@@ -158,6 +158,32 @@ std::shared_ptr<std::vector<float>> decimationFilter(const int numberOfTaps,
         }
     }
     return returnBuffer;
+}
+
+std::shared_ptr<std::vector<float>> designDecimationFilter(float decimationRatio, unsigned &filterDelay) {
+    int numberOfTaps = ((int)(std::ceil(decimationRatio*100)) & ~1)+1; //Ensure odd number of taps.
+    float flatness;
+    int cornerDistance;
+    filterDelay = numberOfTaps/2;
+
+    auto output = std::make_shared<std::vector<float>>();
+    auto filter_in_fft_order = decimationFilter(numberOfTaps, decimationRatio, 0.0, false, flatness, cornerDistance);
+
+
+    int size = filter_in_fft_order->size();
+    int half_size_down = (int)std::floor((float)size/2);
+    int half_size_up = (int)std::ceil((float)size/2);
+
+
+    for(int i = 0; i< size; ++i) {
+        if (i < half_size_up) {
+            output->push_back((*filter_in_fft_order)[half_size_down+i]);
+        } else {
+            //We want round down which is what integer division does.
+            output->push_back((*filter_in_fft_order)[i - half_size_up]);
+        }
+    }
+    return output;
 }
 
 std::shared_ptr<std::vector<float>> designHalfDecimationFilter(float decimationRatio) {

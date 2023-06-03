@@ -38,6 +38,35 @@ static float unlinearize(float x) {
     }
 }
 
+float euclidean_distance(const color_space *color_space, float colorA[3], float colorB[3]) {
+    float x = colorA[0]-colorB[0];
+    float y = colorA[1]-colorB[1];
+    float z = colorA[2]-colorB[2];
+    return x*x + y*y + z*z;
+}
+
+float hcl_oklab_distance(const color_space *color_space, float colorA[3], float colorB[3]) {
+    float hue_distance_weight = color_space->settings.oklab.hue_distance_weight;
+    float chroma_distance_weight = color_space->settings.oklab.chroma_distance_weight;
+    float luminance_distance_weight = color_space->settings.oklab.luminance_distance_weight;
+    float l1 = colorA[0];
+    float l2 = colorB[0];
+    float a1 = colorA[1];
+    float a2 = colorB[1];
+    float b1 = colorA[2];
+    float b2 = colorB[2];
+
+    float deltaLuminance = l1 - l2;
+    float chromaA = std::sqrt(a1*a1+b1*b1);
+    float chromaB = std::sqrt(a2*a2+b2*b2);
+    float deltaChroma = chromaA - chromaB;
+    float deltaChromaSquared = deltaChroma * deltaChroma;
+    float deltaA = a1-a2;
+    float deltaB = b1-b2;
+    float deltaHueSquared = deltaA*deltaA + deltaB*deltaB - deltaChromaSquared;
+    return deltaLuminance*deltaLuminance * luminance_distance_weight + deltaChromaSquared * chroma_distance_weight + deltaHueSquared * hue_distance_weight;
+}
+
 // converts an srgb input to oklab
 static void srgb_oklab(const color_space_converter &converter, const float rgb[3], float lab[3]) {
     // srgb -> linear srgb
@@ -76,7 +105,6 @@ static void oklab_srgb(const color_space_converter &converter, const float lab[3
     }
 }
 
-
 static void oklab_hue_shift(const color_space &space, float color[3]) {
     const oklab_settings &settings = space.settings.oklab;
     const auto l_offset = settings.l_offset;
@@ -89,7 +117,7 @@ static void oklab_hue_shift(const color_space &space, float color[3]) {
     const auto hue_sin_scale = settings.hue_sin_scale;
 
     float old_color_1 = color[1];
-    color[0] = l_offset + (color[0] - 0.5) * l_scale + 0.5;
+    color[0] = l_offset + color[0] * l_scale; /*(color[0] - 0.5) * l_scale + 0.5;*/
     color[1] = a_offset + (color[1] * hue_cos_scale - color[2] * hue_sin_scale);
     color[2] = b_offset + (color[2] * hue_cos_scale + old_color_1 * hue_sin_scale);
 }
@@ -97,7 +125,7 @@ static void oklab_hue_shift(const color_space &space, float color[3]) {
 
 static void identity_convert(const color_space_converter &converter, const float source[3], float destination[3]) {
     for(int i=0; i<3; i++) {
-        destination[i] = source[i];        
+        destination[i] = source[i];
     }
     if(converter.post_process != NULL) {
         converter.post_process(*converter.destination, destination);
@@ -115,19 +143,27 @@ void set_oklab_defaults(oklab_settings &settings) {
     settings.a_offset = 0.0;
     settings.b_offset = 0.0;
 
-    //Set i (cos) and j (sin) values for angle and magnitude vector 
+    //Set i (cos) and j (sin) values for angle and magnitude vector
     settings.hue_cos_scale = 1.0;
     settings.hue_sin_scale = 0.0;
+
+    //for calculation of deltaE colors, set weights for what is most important
+    //hue, chroma, and luminance
+    settings.hue_distance_weight = 1.0;
+    settings.chroma_distance_weight = 1.0;
+    settings.luminance_distance_weight = 1.0;
 }
 
 std::shared_ptr<color_space> get_color_space(color_space_type type) {
     auto return_value = std::make_shared<color_space>();
     return_value->type = type;
-   
+
     if (type == RGB) {
+        return_value->distance = euclidean_distance;
         set_rgb_defaults(return_value->settings.rgb);
     } else {
         set_oklab_defaults(return_value->settings.oklab);
+        return_value->distance = hcl_oklab_distance;
     }
     return return_value;
 }
@@ -140,14 +176,14 @@ std::shared_ptr<color_space_converter> get_color_space_converter(std::shared_ptr
     return_value->post_process = NULL;
 
     if(source->type == RGB && destination->type == OKLAB) {
-        return_value->convert = srgb_oklab;    
+        return_value->convert = srgb_oklab;
     } else if (source->type == OKLAB && destination->type == RGB) {
-        return_value->convert = oklab_srgb; 
+        return_value->convert = oklab_srgb;
     } else if (source->type == destination->type) {
         return_value->convert = identity_convert;
     }
     if(destination->type == OKLAB) {
-        return_value->post_process = oklab_hue_shift; 
+        return_value->post_process = oklab_hue_shift;
     }
     return return_value;
 }

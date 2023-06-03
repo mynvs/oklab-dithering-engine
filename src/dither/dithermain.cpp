@@ -4,6 +4,7 @@
 #include <sstream>
 #include <filesystem>
 #include <algorithm>
+#include <string>
 #include <vector>
 
 #ifdef _WIN32
@@ -35,6 +36,7 @@ int main(int argc, char* argv[]) {
     bool useallpalettes = false;
     std::vector<std::string> palettes;
     std::string pathname = "sequential";
+    std::string color_space = "oklab";
 
 
     printf("Dithering Engine \u001b[90mv\u001b[34;1m%d.%2.2d\u001b[0m\n", DITHERING_ENGINE_VERSION_MAJOR, DITHERING_ENGINE_VERSION_MINOR);
@@ -64,7 +66,12 @@ int main(int argc, char* argv[]) {
         else if (std::string(argv[i]) == "-a")
         {
             std::string dt = argv[++i];
-            if (dt.compare("errordiffuse") == 0)
+
+            if (dt.compare("none") == 0)
+            {
+                a = none;
+            }
+            else if (dt.compare("errordiffuse") == 0)
             {
                 a = errordiffuse;
             }
@@ -117,14 +124,113 @@ int main(int argc, char* argv[]) {
             }
             std::sort(palettes.begin(), palettes.end());
         }
+        else if (std::string(argv[i]) == "-d") {
+            float decimation = 0.0;
+            if(i+1 < argc) {
+                try {
+                    decimation = std::stof(argv[++i], NULL);
+                } catch(const std::logic_error &e) {
+                    //decimation should still be set to illegal 0.0 value
+                    printf("EXCEPTION");
+                }
+            }
+            if(decimation < 1.0) {
+                printf("Must specify a valid floating point number for decimation >= 1.0\n");
+                exit(1);
+            }
+            settings.decimation = decimation;
+            schng = true;
+
+        }
         else if (std::string(argv[i]) == "--path") {
             if(i+1 < argc) {
                 pathname = argv[++i];
                 schng = true;
-            } else { 
+            } else {
                 pathname = "";
             }
         }
+        else if (std::string(argv[i]) == "--dfa") {
+            float decimation_filter_adjust=2.0;
+            if(i+1 < argc) {
+                try {
+                    decimation_filter_adjust = std::stof(argv[++i], NULL);
+                } catch(const std::logic_error &e) {
+                    //decimation_filter_adjust Should still be set to illegal 2.0 value
+                }
+            }
+            if(decimation_filter_adjust > 1.0) {
+                printf("Must specify a valid floating point number after dfa <= 1.0\n");
+                exit(1);
+            }
+            settings.decimation_filter_adjust = decimation_filter_adjust;
+            schng = true;
+        }
+        else if (std::string(argv[i]) == "--color_space") {
+            if(i+1 < argc) {
+                color_space = argv[++i];
+            } else {
+                color_space = "";
+            }
+        }
+        else if (std::string(argv[i]) == "--luminance_offset") {
+            float luminance_offset = std::numeric_limits<float>::infinity();
+            if(i+1 < argc) {
+                try {
+                    luminance_offset = std::stof(argv[++i], NULL);
+                } catch(const std::logic_error &e) {
+
+                }
+
+            }
+
+            if(!std::isinf(luminance_offset)) {
+                color_settings.l_offset += luminance_offset;
+            } else {
+                printf("--luminance_offset reguires a floating point argument.\n");
+                exit(1);
+            }
+        }
+        else if (std::string(argv[i]) == "--luminance_scale") {
+            float luminance_scale = std::numeric_limits<float>::infinity();
+            if(i+1 < argc) {
+                try {
+                    luminance_scale = std::stof(argv[++i], NULL);
+                } catch(const std::logic_error &e) {
+
+                }
+
+            }
+            if(!std::isinf(luminance_scale)) {
+                color_settings.l_scale *= luminance_scale;
+            } else {
+                printf("--luminance_scale reguires a floating point argument.\n");
+                exit(1);
+            }
+        } else if (std::string(argv[i]) == "--hcl_distance_weights") {
+            float hue_distance_weight = std::numeric_limits<float>::infinity();
+            float chroma_distance_weight = std::numeric_limits<float>::infinity();
+            float luminance_distance_weight = std::numeric_limits<float>::infinity();
+            if(i+3 < argc) {
+                try {
+                    hue_distance_weight = std::stof(argv[++i], NULL);
+                    chroma_distance_weight = std::stof(argv[++i], NULL);
+                    luminance_distance_weight = std::stof(argv[++i], NULL);
+                } catch(const std::logic_error &e) {
+
+                }
+
+            }
+            if(std::isinf(hue_distance_weight) || std::isinf(hue_distance_weight) || std::isinf(hue_distance_weight)) {
+                printf("--hcl_distance_weights reguires 3 floating point numbers after it.\n");
+                exit(1);
+            } else {
+                color_settings.hue_distance_weight = hue_distance_weight;
+                color_settings.chroma_distance_weight = chroma_distance_weight;
+                color_settings.luminance_distance_weight = luminance_distance_weight;
+            }
+        }
+
     }
 
     std::unique_ptr<Path> path = get_path(pathname.c_str());
@@ -135,7 +241,7 @@ int main(int argc, char* argv[]) {
         printf("Invalid path chosen. Valid paths are:\n");
         const char * foundName = path_choices[pathCounter].name;
         while(foundName != NULL) {
-            printf("\t%s\n", foundName); 
+            printf("\t%s\n", foundName);
             pathCounter += 1;
             foundName = path_choices[pathCounter].name;
         }
@@ -144,12 +250,17 @@ int main(int argc, char* argv[]) {
     }
 
     printf("Using path %s\n", pathname.c_str());
-             
 
-
-    auto dither_color_space = get_color_space(OKLAB); 
-    dither_color_space->settings.oklab = color_settings;
-
+    auto dither_color_space = get_color_space(OKLAB);
+    if (color_space.compare("oklab")==0) {
+        dither_color_space = get_color_space(OKLAB);
+        dither_color_space->settings.oklab = color_settings;
+    } else if(color_space.compare("rgb")==0) {
+        dither_color_space = get_color_space(RGB);
+    } else {
+        printf("Unknown colorspace, use 'oklab' or 'rgb'\n");
+        exit(1);
+    }
     if (!useallpalettes) {
         int r = initdither(color_palette, filen, out, a, settings, dither_color_space, schng);
         if (r == 1) {
@@ -166,7 +277,6 @@ int main(int argc, char* argv[]) {
         printf("Palettes: \u001b[90m%d\u001b[0m\n\n", sz);
         for (int i = 0; i < sz; i++) {
             printf("Dithering with palette \u001b[90m\"\u001b[0m%s\u001b[90m\"\u001b[0m\n", palettes[i].c_str());
-            struct stat buffer {};
             std::filesystem::create_directory("burstdither");
             std::stringstream outd; outd << "./burstdither/" << palettes[i].c_str();
             int r = initdither(palettes[i].c_str(), filen, outd.str().c_str(), a, settings, dither_color_space, schng);
@@ -181,13 +291,13 @@ int main(int argc, char* argv[]) {
 #endif
         }
     }
-    
+
     return 0;
 }
 
-int initdither(const char* color_palette, 
+int initdither(const char* color_palette,
                const char* filen,
-               const char* out, 
+               const char* out,
                algorithm a,
                dither_settings &settings,
                std::shared_ptr<color_space> dither_color_space,
@@ -201,7 +311,7 @@ int initdither(const char* color_palette,
 
     auto input_color_space = get_color_space(RGB);
     auto palette_color_space = get_color_space(RGB);
-    auto output_color_space = get_color_space(RGB); 
+    auto output_color_space = get_color_space(RGB);
 
     auto palette_to_dither_color_space_converter = get_color_space_converter(palette_color_space, dither_color_space);
     auto input_to_dither_color_space_converter = get_color_space_converter(input_color_space, dither_color_space);

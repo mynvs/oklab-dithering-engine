@@ -8,12 +8,14 @@
 #ifndef DITHER_H
 #define DITHER_H 1
 
-enum algorithm {errordiffuse, ordered};
+enum algorithm {errordiffuse, none, ordered};
 enum filter {filter_ramp, filter_decimate};
 
 struct dither_settings {
     algorithm stalg;
     filter errorFilter;
+    float decimation;
+    float decimation_filter_adjust; //only used by error_decimation filter, eventually move into filter setting
     float dither_intensity;
     std::unique_ptr<Path> dither_path;
 };
