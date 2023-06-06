@@ -3,5 +3,5 @@
 ## Install
 
 ```sh
-git clone https://github.com/PokeAPI/sprites.git
+git clone https://github.com/rohancurran/oklab-dithering-engine
 ```
