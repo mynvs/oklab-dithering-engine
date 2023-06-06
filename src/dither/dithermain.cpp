@@ -7,13 +7,11 @@
 #include <string>
 #include <vector>
 
-#ifdef _WIN32
+#ifndef __GNUC__
 #include <windows.h>
-#define DEL "del"
 #else
 #include <unistd.h>
 #include <sys/stat.h>
-#define DEL "rm"
 #endif
 
 #include "DitherEngineConfig.h"
@@ -345,7 +343,10 @@ int initdither(const char* color_palette,
         file_info.height);
 
     save_ppm_image("dither_output.ppm", file_info, output_image);
-    std::stringstream df; df << "ffmpeg -loglevel quiet -i dither_output.ppm " << out << ".png -y && " << DEL << " *.ppm";
+    std::stringstream df; df << "ffmpeg -loglevel quiet -i dither_output.ppm " << out << ".png -y";
+    std::remove("dither_input.ppm");
+    std::remove("dither_output.ppm");
+
     system(df.str().c_str());
     return 0;
 }
