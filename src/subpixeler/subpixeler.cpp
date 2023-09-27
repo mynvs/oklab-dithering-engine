@@ -23,7 +23,7 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    std::stringstream rf; rf << "ffmpeg -loglevel quiet -i " << filen << " subpixel_input.ppm -y";
+    std::stringstream rf; rf << "ffmpeg -loglevel quiet -i \"" << filen << "\" subpixel_input.ppm -y";
     system(rf.str().c_str());
     std::ifstream input1("subpixel_input.ppm", std::ios_base::binary);
 

@@ -328,7 +328,7 @@ int initdither(const char* color_palette,
 
     ppm_file_info file_info;
     std::stringstream d;
-    d << "ffmpeg -loglevel quiet -i " << filen << " dither_input.ppm -y";
+    d << "ffmpeg -loglevel quiet -i \"" << filen << "\" dither_input.ppm -y";
     system(d.str().c_str());
     image_buffer_t input_image = load_ppm_image("dither_input.ppm", file_info);
     image_buffer_t output_image = create_image_buffer(file_info.width, file_info.height);
