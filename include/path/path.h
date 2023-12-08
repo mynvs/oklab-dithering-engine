@@ -15,6 +15,7 @@ class Path {
 
         virtual int startingOffset(std::shared_ptr<FloatRectangle> rectangle) const;
 
+        // msvc runtime doesn't like this and causes an access violation. cross-platform development is crazy
         virtual std::unique_ptr<Path> clone() const {
             return std::make_unique<Path>();
         }

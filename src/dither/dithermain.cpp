@@ -40,11 +40,14 @@ int main(int argc, char* argv[]) {
     printf("Dithering Engine \u001b[90mv\u001b[34;1m%d.%2.2d\u001b[0m\n", DITHERING_ENGINE_VERSION_MAJOR, DITHERING_ENGINE_VERSION_MINOR);
     for (int i = 1; i < argc; i++)
     {
-        if (std::string(argv[i]) == "-i")
+        std::string input = std::string(argv[i]);
+
+
+        if (input == "-i")
         {
             filen = argv[++i];
         }
-        else if (std::string(argv[i]) == "-c")
+        else if (input == "-c")
         {
             struct stat buffer {};
             std::stringstream ext; ext <<"palettes/"<<argv[++i]<<".png";
@@ -57,11 +60,11 @@ int main(int argc, char* argv[]) {
                 return 1;
             }
         }
-        else if (std::string(argv[i]) == "-o")
+        else if (input == "-o")
         {
             out = argv[++i];
         }
-        else if (std::string(argv[i]) == "-a")
+        else if (input == "-a")
         {
             std::string dt = argv[++i];
 
@@ -83,7 +86,7 @@ int main(int argc, char* argv[]) {
                 return 1;
             }
         }
-        else if (std::string(argv[i]) == "-f") {
+        else if (input == "-f") {
             std::string dt = argv[++i];
             if (dt.compare("ramp") == 0) {
                 settings.errorFilter = filter_ramp;
@@ -95,7 +98,7 @@ int main(int argc, char* argv[]) {
             }
             schng = true;
         }
-        else if (std::string(argv[i]) == "-p") {
+        else if (input == "-p") {
             std::string dt = argv[++i];
             if (dt.compare("alien") == 0) {
                 color_settings.l_offset = -0.3f;
@@ -112,17 +115,17 @@ int main(int argc, char* argv[]) {
             settings.stalg = a;
             schng = true;
         }
-        else if (std::string(argv[i]) == "--show") {
+        else if (input == "--show") {
             showimg = true;
         }
-        else if (std::string(argv[i]) == "--allp") {
+        else if (input == "--allp") {
             useallpalettes = true;
             for (const auto& entry : std::filesystem::directory_iterator("palettes")) {
                 palettes.push_back(entry.path().stem().string());
             }
             std::sort(palettes.begin(), palettes.end());
         }
-        else if (std::string(argv[i]) == "-d") {
+        else if (input == "-d") {
             float decimation = 0.0;
             if(i+1 < argc) {
                 try {
@@ -140,7 +143,7 @@ int main(int argc, char* argv[]) {
             schng = true;
 
         }
-        else if (std::string(argv[i]) == "--path") {
+        else if (input == "--path") {
             if(i+1 < argc) {
                 pathname = argv[++i];
                 schng = true;
@@ -148,7 +151,7 @@ int main(int argc, char* argv[]) {
                 pathname = "";
             }
         }
-        else if (std::string(argv[i]) == "--dfa") {
+        else if (input == "--dfa") {
             float decimation_filter_adjust=2.0;
             if(i+1 < argc) {
                 try {
@@ -164,14 +167,14 @@ int main(int argc, char* argv[]) {
             settings.decimation_filter_adjust = decimation_filter_adjust;
             schng = true;
         }
-        else if (std::string(argv[i]) == "--color_space") {
+        else if (input == "--color_space") {
             if(i+1 < argc) {
                 color_space = argv[++i];
             } else {
                 color_space = "";
             }
         }
-        else if (std::string(argv[i]) == "--luminance_offset") {
+        else if (input == "--luminance_offset") {
             float luminance_offset = std::numeric_limits<float>::infinity();
             if(i+1 < argc) {
                 try {
@@ -189,7 +192,7 @@ int main(int argc, char* argv[]) {
                 exit(1);
             }
         }
-        else if (std::string(argv[i]) == "--luminance_scale") {
+        else if (input == "--luminance_scale") {
             float luminance_scale = std::numeric_limits<float>::infinity();
             if(i+1 < argc) {
                 try {
@@ -205,7 +208,7 @@ int main(int argc, char* argv[]) {
                 printf("--luminance_scale reguires a floating point argument.\n");
                 exit(1);
             }
-        } else if (std::string(argv[i]) == "--hcl_distance_weights") {
+        } else if (input == "--hcl_distance_weights") {
             float hue_distance_weight = std::numeric_limits<float>::infinity();
             float chroma_distance_weight = std::numeric_limits<float>::infinity();
             float luminance_distance_weight = std::numeric_limits<float>::infinity();

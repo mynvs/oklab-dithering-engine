@@ -30,7 +30,8 @@ std::unique_ptr<Path> get_path(const char *name) {
 
     while(foundName != NULL) {
         if(strcmp(name, foundName)==0) {
-            return path_choices[choiceIndex].path.clone();
+            // temporary fix for access violation
+            return std::make_unique<Path>(path_choices[choiceIndex].path);
         }
         choiceIndex+=1;
         foundName = path_choices[choiceIndex].name;
