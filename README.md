@@ -3,5 +3,5 @@
 ## Install
 
 ```sh
-git clone https://github.com/rohancurran/oklab-dithering-engine
+git clone https://github.com/mynvs/oklab-dithering-engine
 ```
