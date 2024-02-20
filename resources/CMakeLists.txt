@@ -1,0 +1,5 @@
+if(WIN32)
+  target_sources(dither PRIVATE ${PROJECT_SOURCE_DIR}/resources/win32/dither_resource.rc)
+  target_sources(make-palette PRIVATE ${CMAKE_SOURCE_DIR}/resources/win32/makepalette_resource.rc)
+  target_sources(subpixeler PRIVATE ${PROJECT_SOURCE_DIR}/resources/win32/subpixeler_resource.rc)
+endif()
