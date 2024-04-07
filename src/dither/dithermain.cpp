@@ -346,7 +346,7 @@ int initdither(const char* color_palette,
         file_info.height);
 
     save_ppm_image("dither_output.ppm", file_info, output_image);
-    std::stringstream df; df << "ffmpeg -loglevel quiet -i dither_output.ppm " << out << ".png -y";
+    std::stringstream df; df << "ffmpeg -loglevel quiet -i dither_output.ppm \"" << out << ".png\" -y";
     system(df.str().c_str());
     std::remove("dither_input.ppm");
     std::remove("dither_output.ppm");
