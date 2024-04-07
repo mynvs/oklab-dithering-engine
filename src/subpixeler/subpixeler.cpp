@@ -121,7 +121,7 @@ int main(int argc, char* argv[]) {
     output.close();
     input.close();
 
-    std::stringstream dv; dv << "ffmpeg -loglevel quiet -i subpixel_output.ppm " << out << " -y &&"<< DEL <<" *.ppm";
+    std::stringstream dv; dv << "ffmpeg -loglevel quiet -i subpixel_output.ppm \"" << out << "\" -y &&"<< DEL <<" *.ppm";
     system(dv.str().c_str());
 
     return 0;
