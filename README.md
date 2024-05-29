@@ -13,9 +13,9 @@
 3. verify that python is working:
 	- run \``python`\`
 
-5. verify that pip is working:
+4. verify that pip is working:
 	- run \``pip --version`\`
 
-7. install required libraries:
+5. install required libraries:
    	- open a cmd terminal in "string-theory-filter-main" directory
 	- run \``pip install -r requirements`\`
