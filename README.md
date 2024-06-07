@@ -1,4 +1,6 @@
 # oklab-dithering-engine
+![Python](https://img.shields.io/badge/python-3.10-blue.svg)
+![Repo Size](https://img.shields.io/github/repo-size/mynvs/oklab-dithering-engine)
 
 ### installation
 
