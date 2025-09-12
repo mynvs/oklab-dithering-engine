@@ -1,2 +1,0 @@
-add_subdirectory(dither_library)
-add_subdirectory(filter_library)

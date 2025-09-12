@@ -1,3 +1,0 @@
-#include <winres.h>
-
-_MKPAL ICON "../img/make_palette.ico"

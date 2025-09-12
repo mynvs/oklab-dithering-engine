@@ -2,7 +2,6 @@
 #include <memory>
 #include <utility>
 #include <vector>
-#include <cstdio>
 #include "float_rectangle.h"
 
 FloatRectangle::FloatRectangle(unsigned width, unsigned height) {
@@ -50,4 +49,3 @@ void FloatRectangle::depad() {
         buffer = std::move(newBuffer);
     }
 }
-

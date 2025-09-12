@@ -1,8 +1,11 @@
 a.out
-/bin/*
+/build
+/bin
 /dither.png
 /output.png
 /*.ppm
+.vs
+.vscode
 
 CMakeLists.txt.user
 CMakeCache.txt

@@ -1,0 +1,3 @@
+#include <winres.h>
+
+_SUBPX ICON "../img/subpixeler.ico"
