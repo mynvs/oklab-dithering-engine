@@ -7,7 +7,7 @@ A series of command line utilities that manipulate images to look dithered
 
 ### 1. install development enviroments
 
-**WINDOWS** - https://www.msys2.org/\
+**WINDOWS** - https://www.msys2.org/ \
 **UNIX-LIKE** - install cmake and g++
 
 ### 2. clone github repository
