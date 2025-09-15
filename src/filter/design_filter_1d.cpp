@@ -1,10 +1,24 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
-
-#include <iterator>
 #include <memory>
 #include <vector>
-#include "../external/pocketfft_hdronly.h"
+
+// no IMPLEMENTATION because that encourages openGL
+#include "../external/dj_fft.h"
+
+size_t next_pow2(size_t v) { // mitigate for dj_fft
+    if (v == 0) return 1;
+    --v;
+    v |= v >> 1;
+    v |= v >> 2;
+    v |= v >> 4;
+    v |= v >> 8;
+    v |= v >> 16;
+#if SIZE_MAX > UINT32_MAX
+    v |= v >> 32;
+#endif
+    return ++v;
+}
 
 
 std::shared_ptr<std::vector<float>> blackmanWindow(unsigned int size) {
@@ -20,13 +34,12 @@ std::shared_ptr<std::vector<float>> blackmanWindow(unsigned int size) {
 void normalize(std::vector<float> &buffer) {
     float sum = 0.0;
 
-    for(unsigned i=0; i<buffer.size(); ++i) {
+    unsigned int i;
+    for(i=0; i<buffer.size(); ++i)
         sum += buffer[i];
-    }
 
-    for(unsigned i=0; i<buffer.size(); ++i) {
-        buffer[i] = buffer[i]/sum;
-    }
+    for(i=0; i<buffer.size(); ++i)
+        buffer[i] /= sum;
 }
 
 float sinc(float x) {
@@ -64,28 +77,17 @@ std::shared_ptr<std::vector<float>> decimationFilter(const int numberOfTaps,
     normalize(buffer);
 
     std::vector<std::complex<float>> fftBuffer;
+    fftBuffer.reserve(buffer.size() * 2);
     for(unsigned int i=0; i<buffer.size(); ++i) {
-        fftBuffer.push_back( buffer[i] );
+        fftBuffer.emplace_back(buffer[i], 0.0f);
     }
-    //Zero pad the fft buffer.
-    std::vector<std::complex<float>>::iterator it = fftBuffer.begin();
-    std::advance(it, numberOfTaps/2);
-    fftBuffer.insert(it, 15*buffer.size(), 0.0);
 
+    size_t n2 = next_pow2(fftBuffer.size());
+    if(n2 != fftBuffer.size()){
+        fftBuffer.resize(n2, std::complex<float>(0.0f, 0.0f));
+    }
 
-    std::vector<std::complex<float>> fftOutputBuffer;
-    fftOutputBuffer.insert(fftOutputBuffer.end(), fftBuffer.size(), 0.0); //Fill with zeroes.
-
-    pocketfft::shape_t shape{fftBuffer.size()};
-    pocketfft::stride_t strideInput(shape.size());
-    pocketfft::stride_t strideOutput(shape.size());
-    strideInput[0] = sizeof(std::complex<float>);
-    strideOutput[0] = sizeof(std::complex<float>);
-    pocketfft::shape_t axes;
-    axes.push_back(0);
-
-    //Time to do the fft.
-    pocketfft::c2c(shape, strideInput, strideOutput, axes, true, fftBuffer.data(), fftOutputBuffer.data(), 1.0f); ///float(fftBuffer.size()));
+    std::vector<std::complex<float>> fftOutputBuffer = dj::fft1d(fftBuffer, dj::fft_dir::DIR_FWD);
 
     std::vector<float> magnitudes;
     for(unsigned i=0; i<fftBuffer.size(); ++i) {

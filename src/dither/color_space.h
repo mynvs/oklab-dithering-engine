@@ -8,7 +8,7 @@ struct oklab_settings {
     float l_offset;
     float l_scale; // -inf to +inf
 
-    /* i and j vector values to multiply by 
+    /* i and j vector values to multiply by
      * the hue to set its magnitude and rotation
      */
     float hue_cos_scale;
@@ -26,8 +26,8 @@ struct oklab_settings {
 
 
 //EMPTY settings for RGB
-struct rgb_settings { 
-}; 
+struct rgb_settings {
+};
 
 enum color_space_type {
     RGB = 0,
@@ -37,7 +37,7 @@ enum color_space_type {
 void set_rgb_defaults(rgb_settings& settings);
 
 void set_oklab_defaults(oklab_settings &settings);
- 
+
 struct color_space {
     color_space_type type;
     float (*distance)(const color_space *color_space, float colorA[3], float colorB[3]);
@@ -64,4 +64,3 @@ std::shared_ptr<color_space_converter> get_color_space_converter(std::shared_ptr
                                                                  std::shared_ptr<color_space> destination);
 
 #endif
-

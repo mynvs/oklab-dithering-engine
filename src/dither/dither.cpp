@@ -21,8 +21,8 @@ void set_dither_defaults(dither_settings& settings) {
 }
 
 void dither(const dither_settings& settings,
-    image_buffer_t input_image,
-    image_buffer_t output_image,
+    unsigned char* input_image,
+    unsigned char* output_image,
     color_space_converter &input_to_dither_colorspace,
     color_space_converter &dither_to_output_colorspace,
     const palette_info& palette,
@@ -34,9 +34,9 @@ void dither(const dither_settings& settings,
 
     unsigned input_image_offset = 0;
     unsigned output_image_offset = 0;
-    auto palette_channel0 = palette.channel0.get();
-    auto palette_channel1 = palette.channel1.get();
-    auto palette_channel2 = palette.channel2.get();
+    auto palette_channel0 = palette.c0;
+    auto palette_channel1 = palette.c1;
+    auto palette_channel2 = palette.c2;
     int num_colors = palette.num_colors;
 
     std::shared_ptr<FloatRectangle> channel0_input = std::make_shared<FloatRectangle>(width, height);
@@ -47,16 +47,15 @@ void dither(const dither_settings& settings,
     std::shared_ptr<FloatRectangle> channel2_output = std::make_shared<FloatRectangle>(width, height);
 
     //Do colorspace conversion and setup float buffers and path walking
-    for (int i = 0; i < num_pixels; i++) {
+    for (unsigned int i = 0; i < num_pixels; i++) {
         float source_color[3];
         float target_color[3];
-        byte_triple_to_floats(&input_image[input_image_offset], source_color);
-        input_image_offset += 3;
+        byte_triple_to_floats(&input_image[i * 3], source_color);
         input_to_dither_colorspace.convert(input_to_dither_colorspace, source_color, target_color);
 
-        channel0_input->set((unsigned)i, target_color[0]);
-        channel1_input->set((unsigned)i, target_color[1]);
-        channel2_input->set((unsigned)i, target_color[2]);
+        channel0_input->set(i, target_color[0]);
+        channel1_input->set(i, target_color[1]);
+        channel2_input->set(i, target_color[2]);
     }
     auto channel0_input_iterator = PathIterator(channel0_input, settings.dither_path->clone());
     auto channel1_input_iterator = PathIterator(channel1_input, settings.dither_path->clone());
@@ -78,7 +77,7 @@ void dither(const dither_settings& settings,
         FirFilter1d<float> filter0 = FirFilter1d<float>(weights);
         FirFilter1d<float> filter1 = FirFilter1d<float>(weights);
         FirFilter1d<float> filter2 = FirFilter1d<float>(weights);
-        for (unsigned int i = 0; i < channel0_input_iterator.getRectangle()->getPixels(); i++) {
+        for (unsigned int i = 0; i < channel0_input_iterator.getRectangle()->getPixelAmount(); i++) {
 
             filter_color[0] = filter0.filter(*channel0_input_iterator++);
             filter_color[1] = filter1.filter(*channel1_input_iterator++);
@@ -128,6 +127,11 @@ void dither(const dither_settings& settings,
                 float decimationRatio = 24.0/bitCount;
 
                 decimationRatio -= (decimationRatio - 1.0)*settings.decimation_filter_adjust;
+                if(std::isnan(decimationRatio)){
+                    decimationRatio = 1.0f;
+                    printf("Palette too small to keep up with decimation!\n");
+                }
+
                 printf("Using decimation ratio: %f\n", decimationRatio);
 
                 auto data = designHalfDecimationFilter(decimationRatio);
@@ -146,18 +150,17 @@ void dither(const dither_settings& settings,
 
             //getPixels());
             //Perform dither
-            for (unsigned i = 0; i < channel0_input_iterator.getRectangle()->getPixels(); i++) {
-                float target_color[3];
-                float old_target_color[3]{};
-
-                target_color[0] = *channel0_input_iterator++;
-                target_color[1] = *channel1_input_iterator++;
-                target_color[2] = *channel2_input_iterator++;
-
-                old_target_color[0] = target_color[0];
-                old_target_color[1] = target_color[1];
-                old_target_color[2] = target_color[2];
-
+            for (unsigned int i = 0; i < channel0_input_iterator.getRectangle()->getPixelAmount(); i++) {
+                float target_color[3]{
+                    *channel0_input_iterator++,
+                    *channel1_input_iterator++,
+                    *channel2_input_iterator++,
+                };
+                float old_target_color[3]{
+                    target_color[0],
+                    target_color[1],
+                    target_color[2],
+                };
                 target_color[0] += filter0_error;
                 target_color[1] += filter1_error;
                 target_color[2] += filter2_error;
@@ -165,11 +168,11 @@ void dither(const dither_settings& settings,
                 int amin_delta = 0;
                 float best_delta = infinity;
                 for (int d = 0; d < num_colors; d++) {
-
-                    float palette_color[3]{};
-                    palette_color[0] = palette_channel0[d];
-                    palette_color[1] = palette_channel1[d];
-                    palette_color[2] = palette_channel2[d];
+                    float palette_color[3]{
+                        palette_channel0[d],
+                        palette_channel1[d],
+                        palette_channel2[d],
+                    };
 
                     float delta = space->distance(space.get(), target_color, palette_color);
                     if (delta < best_delta) {
@@ -177,23 +180,24 @@ void dither(const dither_settings& settings,
                         best_delta = delta;
                     }
                 }
-                float final_color[3];
-                final_color[0] = palette_channel0[amin_delta];
-                final_color[1] = palette_channel1[amin_delta];
-                final_color[2] = palette_channel2[amin_delta];
+                float final_color[3]{
+                    palette_channel0[amin_delta],
+                    palette_channel1[amin_delta],
+                    palette_channel2[amin_delta]
+                };
 
                 filter0_error=filter0.filter(final_color[0] - old_target_color[0]);
                 filter1_error=filter1.filter(final_color[1] - old_target_color[1]);
                 filter2_error=filter2.filter(final_color[2] - old_target_color[2]);
 
-                *(channel0_output_iterator++) = final_color[0];
-                *(channel1_output_iterator++) = final_color[1];
-                *(channel2_output_iterator++) = final_color[2];
+                *channel0_output_iterator++ = final_color[0];
+                *channel1_output_iterator++ = final_color[1];
+                *channel2_output_iterator++ = final_color[2];
             }
             break;
         }
         case none:{
-            for (unsigned i = 0; i < channel0_input_iterator.getRectangle()->getPixels(); i++) {
+            for (unsigned int i = 0; i < channel0_input_iterator.getRectangle()->getPixelAmount(); i++) {
                 *channel0_output_iterator++ = *channel0_input_iterator++;
                 *channel1_output_iterator++ = *channel1_input_iterator++;
                 *channel2_output_iterator++ = *channel2_input_iterator++;
@@ -221,7 +225,6 @@ void dither(const dither_settings& settings,
         final_color[1] = rectangle1->get(i);
         final_color[2] = rectangle2->get(i);
         dither_to_output_colorspace.convert(dither_to_output_colorspace, final_color, output_color);
-        float_triple_to_bytes(output_color, &output_image[output_image_offset]);
-        output_image_offset += 3;
+        float_triple_to_bytes(output_color, &output_image[i * 3]);
     }
 }

@@ -3,38 +3,34 @@
 
 // float -> unsigned char; clamps input between 0 and 255, then casts to unsigned char
 static uint8_t cclamp(float n) {
-    if (n <= 0) return (unsigned char)0;
-    if (n >= 255) return (unsigned char)255;
+    if (n < 0) return 0;
+    if (n > 255) return 255;
     return (uint8_t)std::roundf(n);
 }
 
 void byte_triple_to_floats(const uint8_t bytes[3], float floats[3]) {
-    for( int i=0; i<3; i++) {
-        floats[i] =  float(bytes[i]) * 0.00392156862745098;
-    }
+    floats[0] = float(bytes[0]) * 0.00392156862745098;
+    floats[1] = float(bytes[1]) * 0.00392156862745098;
+    floats[2] = float(bytes[2]) * 0.00392156862745098;
 }
 void float_triple_to_bytes(const float floats[3], uint8_t bytes[3]) {
-    for( int i=0; i<3; i++) {
-        bytes[i] =  cclamp( floats[i]*255 );
-    }
+    bytes[0] = cclamp(floats[0]*255);
+    bytes[1] = cclamp(floats[1]*255);
+    bytes[2] = cclamp(floats[2]*255);
 }
 
 // float -> float; converts an srgb value to linear srgb
 static float linearize(float x) {
-    if (x > 0.04045) {
+    if (x > 0.04045)
         return powf((x + 0.055)*0.94786729857819905, 2.4);
-    } else {
-        return x * 0.07739938080495357;
-    }
+    else return x * 0.07739938080495357;
 }
 
 // float -> float; converts a linear srgb value to srgb
 static float unlinearize(float x) {
-    if( x > 0.0031308 ) {
+    if( x > 0.0031308 )
         return powf(x, 0.41666666666666667)*1.055 - 0.055;
-    } else {
-        return 12.92 * x;
-    }
+    else return 12.92 * x;
 }
 
 float euclidean_distance(const color_space *color_space, float colorA[3], float colorB[3]) {
@@ -123,9 +119,9 @@ static void oklab_hue_shift(const color_space &space, float color[3]) {
 
 
 static void identity_convert(const color_space_converter &converter, const float source[3], float destination[3]) {
-    for(int i=0; i<3; i++) {
-        destination[i] = source[i];
-    }
+    destination[0] = source[0];
+    destination[1] = source[1];
+    destination[2] = source[2];
     if(converter.post_process != NULL) {
         converter.post_process(*converter.destination, destination);
     }

@@ -4,17 +4,15 @@
 Path::Path() {
     //Empty constructor
 }
-void Path::advance(std::shared_ptr<FloatRectangle> rectangle, int &currentOffset) {        
+
+void Path::advance(std::shared_ptr<FloatRectangle> rectangle, int &currentOffset) {
     if(!this->ended(rectangle, currentOffset)) {
-        currentOffset+=1;
+        currentOffset++;
     }
 }
 
 bool Path::ended(std::shared_ptr<FloatRectangle> rectangle, int currentOffset) const {
-    if(currentOffset >= (int)rectangle->getPixels()) {   
-        return true;
-    } 
-    return false;
+    return (currentOffset >= (int)rectangle->getPixelAmount());
 }
 
 std::shared_ptr<FloatRectangle> Path::pad(std::shared_ptr<FloatRectangle> source) {
@@ -30,5 +28,3 @@ int Path::startingOffset(std::shared_ptr<FloatRectangle> source) const {
 std::unique_ptr<Path> clone() {
     return std::make_unique<Path>();
 }
-
-

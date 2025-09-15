@@ -46,9 +46,6 @@ set(ditherlib
     src/dither/dither.h
     src/dither/dither.cpp
 
-    src/dither/image_buffer.h
-    src/dither/image_buffer.cpp
-
     src/dither/color_space.cpp
     src/dither/color_space.h
 
@@ -60,6 +57,7 @@ set(ditherlib
 )
 
 set(filterlib
+    src/external/dj_fft.h
     src/filter/design_filter_1d.cpp
     src/filter/design_filter_1d.h
     src/filter/fir_1d.h

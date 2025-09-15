@@ -7,7 +7,7 @@
 #include "float_rectangle.h"
 #include "sequential_path.h"
 
-class PathIterator {    
+class PathIterator {
     protected:
         std::shared_ptr<FloatRectangle> rectangle=NULL;
         std::unique_ptr<Path> path=NULL;
@@ -23,24 +23,24 @@ class PathIterator {
         PathIterator() {
             rectangle = NULL;
             path=get_path("sequential");
-            currentIndex=0; 
+            currentIndex=0;
         }
- 
+
         //Copy constructor
         PathIterator(const PathIterator &other);
- 
+
         PathIterator(const std::shared_ptr<FloatRectangle> rectangle, std::unique_ptr<Path> path);
 
         virtual PathIterator &operator =(const PathIterator &other);
-      
+
         std::shared_ptr<FloatRectangle> getRectangle() {
             return rectangle;
         }
-        
+
         unsigned getX() {
             return rectangle->getX(currentIndex);
         }
- 
+
         unsigned getY() {
             return rectangle->getY(currentIndex);
         }
@@ -48,8 +48,8 @@ class PathIterator {
         float &operator*();
 
         float *operator->();
-       
-        bool ended() const {  
+
+        bool ended() const {
             return path->ended(rectangle, currentIndex);
         }
 
@@ -66,5 +66,3 @@ class PathIterator {
 };
 
 #endif
-
-

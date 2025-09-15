@@ -1,5 +1,5 @@
 /* Interface for dealing with PPM graphics files */
-#include "image_buffer.h"
+#include <string>
 
 #ifndef IMGHANDLE_H
 #define IMGHANDLE_H 1
@@ -10,8 +10,8 @@ struct image_info {
     int channels;
 };
 
-image_buffer_t load_image(const std::string& input_name, image_info& file_info);
+unsigned char* load_image(const std::string& input_name, image_info& file_info);
 
-void save_image(const std::string& output_name, const image_info& file_info, image_buffer_t image);
+int save_image(const std::string& output_name, const image_info& file_info, unsigned char* image);
 
 #endif

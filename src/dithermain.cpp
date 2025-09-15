@@ -2,7 +2,6 @@
 #include <cstring>
 #include <sstream>
 #include <filesystem>
-#include <algorithm>
 #include <string>
 #include <vector>
 
@@ -18,34 +17,36 @@
 #include "dither/dither.h"
 #include "dither/imghandle.h"
 
+#define SHOW_IMAGE (1)
+#define SETTINGS_CHANGED (1 << 1)
+#define DITHER_BURST (1 << 2)
+
 int main(int argc, char* argv[]) {
-    const char* color_palette = "12";
+    const char* color_palette = "win256";
     const char* filen = "input.png";
     const char* out = "dither";
+    const char* pathname = "sequential";
+    const char* color_space = "oklab";
+
     algorithm a = errordiffuse;
     dither_settings settings {};
     set_dither_defaults(settings);
     oklab_settings color_settings {};
     set_oklab_defaults(color_settings);
-    bool showimg = false;
-    bool schng = false;
-    bool useallpalettes = false;
+    unsigned char flags = 0;
     std::vector<std::string> palettes;
-    std::string pathname = "sequential";
-    std::string color_space = "oklab";
-
 
     printf("Dithering Engine \u001b[90mv\u001b[34;1m%.3d\u001b[0m\n", DITHERVERSION);
-    for (int i = 1; i < argc; i++)
-    {
-        std::string input = std::string(argv[i]);
-
-
-        if (input == "-i")
+    for (int i = 1; i < argc; i++) {
+        if (!std::strcmp(argv[i], "-i") && (i+1) < argc)
         {
             filen = argv[++i];
         }
-        else if (input == "-c")
+        else if (!std::strcmp(argv[i], "-o") && (i+1) < argc)
+        {
+            out = argv[++i];
+        }
+        else if (!std::strcmp(argv[i], "-c") && (i+1) < argc)
         {
             struct stat buffer {};
             std::stringstream ext; ext <<"palettes/"<<argv[++i]<<".png";
@@ -58,11 +59,7 @@ int main(int argc, char* argv[]) {
                 return 1;
             }
         }
-        else if (input == "-o")
-        {
-            out = argv[++i];
-        }
-        else if (input == "-a")
+        else if (!std::strcmp(argv[i], "-a") && (i+1) < argc)
         {
             std::string dt = argv[++i];
 
@@ -84,7 +81,7 @@ int main(int argc, char* argv[]) {
                 return 1;
             }
         }
-        else if (input == "-f") {
+        else if (!std::strcmp(argv[i], "-f") && (i+1) < argc) {
             std::string dt = argv[++i];
             if (dt.compare("ramp") == 0) {
                 settings.errorFilter = filter_ramp;
@@ -94,9 +91,9 @@ int main(int argc, char* argv[]) {
                 settings.dither_intensity = 1.0;
 
             }
-            schng = true;
+            flags |= SETTINGS_CHANGED;
         }
-        else if (input == "-p") {
+        else if (!std::strcmp(argv[i], "-p") && (i+1) < argc) {
             std::string dt = argv[++i];
             if (dt.compare("alien") == 0) {
                 color_settings.l_offset = -0.3f;
@@ -111,19 +108,18 @@ int main(int argc, char* argv[]) {
             }
             settings.dither_intensity = 0.75;
             settings.stalg = a;
-            schng = true;
+            flags |= SETTINGS_CHANGED;
         }
-        else if (input == "--show") {
-            showimg = true;
+        else if (!std::strcmp(argv[i], "--show")) {
+            flags |= SHOW_IMAGE;
         }
-        else if (input == "--allp") {
-            useallpalettes = true;
+        else if (!std::strcmp(argv[i], "--allp")) {
+             flags |= DITHER_BURST;
             for (const auto& entry : std::filesystem::directory_iterator("palettes")) {
                 palettes.push_back(entry.path().stem().string());
             }
-            std::sort(palettes.begin(), palettes.end());
         }
-        else if (input == "-d") {
+        else if (!std::strcmp(argv[i], "-d") && (i+1) < argc) {
             float decimation = 0.0;
             if(i+1 < argc) {
                 try {
@@ -138,18 +134,17 @@ int main(int argc, char* argv[]) {
                 exit(1);
             }
             settings.decimation = decimation;
-            schng = true;
-
+            flags |= SETTINGS_CHANGED;
         }
-        else if (input == "--path") {
+        else if (!std::strcmp(argv[i], "--show")) {
             if(i+1 < argc) {
                 pathname = argv[++i];
-                schng = true;
+                flags |= SETTINGS_CHANGED;
             } else {
                 pathname = "";
             }
         }
-        else if (input == "--dfa") {
+        else if (!std::strcmp(argv[i], "--dfa")) {
             float decimation_filter_adjust=2.0;
             if(i+1 < argc) {
                 try {
@@ -163,16 +158,16 @@ int main(int argc, char* argv[]) {
                 exit(1);
             }
             settings.decimation_filter_adjust = decimation_filter_adjust;
-            schng = true;
+            flags |= SETTINGS_CHANGED;
         }
-        else if (input == "--color_space") {
+        else if (!std::strcmp(argv[i], "--color_space")) {
             if(i+1 < argc) {
                 color_space = argv[++i];
             } else {
                 color_space = "";
             }
         }
-        else if (input == "--luminance_offset") {
+        else if (!std::strcmp(argv[i], "--luminance_offset")) {
             float luminance_offset = std::numeric_limits<float>::infinity();
             if(i+1 < argc) {
                 try {
@@ -180,7 +175,6 @@ int main(int argc, char* argv[]) {
                 } catch(const std::logic_error &e) {
 
                 }
-
             }
 
             if(!std::isinf(luminance_offset)) {
@@ -190,7 +184,7 @@ int main(int argc, char* argv[]) {
                 exit(1);
             }
         }
-        else if (input == "--luminance_scale") {
+        else if (!std::strcmp(argv[i], "--luminance_scale")) {
             float luminance_scale = std::numeric_limits<float>::infinity();
             if(i+1 < argc) {
                 try {
@@ -206,7 +200,8 @@ int main(int argc, char* argv[]) {
                 printf("--luminance_scale reguires a floating point argument.\n");
                 exit(1);
             }
-        } else if (input == "--hcl_distance_weights") {
+        }
+        else if (!std::strcmp(argv[i], "--hcl_distance_weights")) {
             float hue_distance_weight = std::numeric_limits<float>::infinity();
             float chroma_distance_weight = std::numeric_limits<float>::infinity();
             float luminance_distance_weight = std::numeric_limits<float>::infinity();
@@ -218,7 +213,6 @@ int main(int argc, char* argv[]) {
                 } catch(const std::logic_error &e) {
 
                 }
-
             }
             if(std::isinf(hue_distance_weight) || std::isinf(hue_distance_weight) || std::isinf(hue_distance_weight)) {
                 printf("--hcl_distance_weights reguires 3 floating point numbers after it.\n");
@@ -229,44 +223,41 @@ int main(int argc, char* argv[]) {
                 color_settings.luminance_distance_weight = luminance_distance_weight;
             }
         }
-
     }
 
-    std::unique_ptr<Path> path = get_path(pathname.c_str());
+    std::unique_ptr<Path> path = get_path(pathname);
     if(path != NULL) {
         settings.dither_path = std::move(path);
     } else {
-        int pathCounter =0;
+        int pathCounter = 0;
         printf("Invalid path chosen. Valid paths are:\n");
-        const char * foundName = path_choices[pathCounter].name;
+        const char* foundName = path_choices[pathCounter].name;
         while(foundName != NULL) {
             printf("\t%s\n", foundName);
-            pathCounter += 1;
-            foundName = path_choices[pathCounter].name;
+            foundName = path_choices[++pathCounter].name;
         }
         printf("\n");
         exit(1);
     }
 
-    printf("Using path %s\n", pathname.c_str());
+    printf("Using path %s\n", pathname);
 
     auto dither_color_space = get_color_space(OKLAB);
-    if (color_space.compare("oklab")==0) {
+    if (std::strcmp(color_space, "oklab")==0) {
         dither_color_space = get_color_space(OKLAB);
         dither_color_space->settings.oklab = color_settings;
-    } else if(color_space.compare("rgb")==0) {
+    } else if(std::strcmp(color_space, "rgb")==0) {
         dither_color_space = get_color_space(RGB);
     } else {
         printf("Unknown colorspace, use 'oklab' or 'rgb'\n");
         exit(1);
     }
-    if (!useallpalettes) {
-        int r = initdither(color_palette, filen, out, a, settings, dither_color_space, schng);
-        if (r == 1) {
+    if (!(flags & DITHER_BURST)) {
+        if (initdither(color_palette, filen, out, a, settings, dither_color_space, (flags & SETTINGS_CHANGED)) == 1) {
             printf("Dither \u001b[31mfailed\u001b[0m.\n");
             return 2;
         }
-        if (showimg) {
+        if ((flags & SHOW_IMAGE)) {
             std::stringstream sh; sh << out << ".png";
             system(sh.str().c_str());
         }
@@ -277,14 +268,13 @@ int main(int argc, char* argv[]) {
         for (int i = 0; i < sz; i++) {
             printf("Dithering with palette \u001b[90m\"\u001b[0m%s\u001b[90m\"\u001b[0m\n", palettes[i].c_str());
             std::filesystem::create_directory("burstdither");
-            std::stringstream outd; outd << "./burstdither/" << palettes[i].c_str();
-            int r = initdither(palettes[i].c_str(), filen, outd.str().c_str(), a, settings, dither_color_space, schng);
-            if (r == 1) {
+            std::stringstream outd; outd << "burstdither/" << palettes[i].c_str();
+            if (initdither(palettes[i].c_str(), filen, outd.str().c_str(), a, settings, dither_color_space, (flags & SETTINGS_CHANGED)) == 1) {
                 printf("Dither \u001b[31mfailed\u001b[0m.\n");
                 return 2;
             }
         }
-        if (showimg) {
+        if ((flags & SHOW_IMAGE)) {
 #ifdef _WIN32
             system("explorer burstdither");
 #endif
@@ -317,6 +307,10 @@ int initdither(const char* color_palette,
     auto dither_to_output_color_space_converter = get_color_space_converter(dither_color_space, output_color_space);
 
     std::stringstream palette_cmd; palette_cmd << "palettes/" << color_palette << ".png";
+    if (~stat(filen, &buffer) == 0) { // in case
+        printf("Palette image \"%s\"\u001b[31m does not exist\u001b[0m.\n", filen);
+        return 1;
+    }
 
     palette_info palette;
     load_palette(palette_cmd.str(), *palette_to_dither_color_space_converter, palette);
@@ -327,8 +321,13 @@ int initdither(const char* color_palette,
     }
 
     image_info file_info;
-    image_buffer_t input_image = load_image(filen, file_info);
-    image_buffer_t output_image = create_image_buffer(file_info.width, file_info.height);
+    unsigned char* input_image = load_image(filen, file_info);
+    if(input_image == NULL){
+        printf("failed to load image\n");
+        exit(13);
+    }
+
+    unsigned char* output_image = new unsigned char[(file_info.width * file_info.height) * 3];
 
     dither(settings,
         input_image,
@@ -341,6 +340,11 @@ int initdither(const char* color_palette,
     );
 
     std::stringstream df; df << out << ".png";
-    save_image(df.str(), file_info, output_image);
+    if(!save_image(df.str(), file_info, output_image)){
+        printf("failed to save dithered image\n");
+        exit(13);
+    }
+    delete[] input_image;
+    delete[] output_image;
     return 0;
 }

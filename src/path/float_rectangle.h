@@ -8,10 +8,7 @@
 
 struct Padding {
     Padding() { top=0; bottom=0; left=0; right=0; }
-    int top;
-    int bottom;
-    int left;
-    int right;
+    int top,bottom,left, right;
 };
 
 class FloatRectangle {
@@ -23,7 +20,7 @@ class FloatRectangle {
         FloatRectangle(unsigned width, unsigned height);
 
         FloatRectangle(FloatRectangle& other, Padding padding);
-       
+
         unsigned getX(unsigned offset) {
             return offset % width;
         }
@@ -36,28 +33,28 @@ class FloatRectangle {
             return y*width + x;
         }
 
-        unsigned getPixels() {
+        unsigned getPixelAmount() {
             return width*height;
         }
 
          float get(unsigned offset) {
-            assert(offset < this->getPixels());
-            return (*buffer)[offset];
+            assert(offset < this->getPixelAmount());
+            return buffer[offset];
         }
 
         float &getForModification(unsigned offset) {
-            assert(offset < this->getPixels());
-            return (*buffer)[offset];
+            assert(offset < this->getPixelAmount());
+            return buffer[offset];
         }
 
         float *get_ptr(unsigned offset) {
-            assert(offset < this->getPixels());
-            return &((*buffer)[offset]);
+            assert(offset < this->getPixelAmount());
+            return &(buffer[offset]);
         }
 
         void set(unsigned offset, float value) {
-            assert(offset < this->getPixels());
-            (*buffer)[offset] = value;
+            assert(offset < this->getPixelAmount());
+            buffer[offset] = value;
         }
 
         float get(unsigned x, unsigned y) {
@@ -67,7 +64,7 @@ class FloatRectangle {
         void set(unsigned x, unsigned y, float value) {
             set(getOffset(x, y), value);
         }
-     
+
         bool isPadded() {
             return paddingStack.size() > 0;
         }
@@ -76,8 +73,7 @@ class FloatRectangle {
 
     protected:
         std::vector<Padding> paddingStack;
-        std::unique_ptr<std::vector<float>> buffer;
+        float* buffer;
 };
 
 #endif
-

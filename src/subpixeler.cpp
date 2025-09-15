@@ -13,13 +13,9 @@ int main(int argc, char* argv[]) {
     for (int i = 1; i < argc; i++)
     {
         if (std::string(argv[i]) == "-i")
-        {
             filen = argv[++i];
-        }
         else if (std::string(argv[i]) == "-o")
-        {
             out = argv[++i];
-        }
     }
 
     int width, height, channels;
@@ -67,9 +63,9 @@ int main(int argc, char* argv[]) {
         for (int x = 0; x < ow; ++x) {
             int si = (y * width + 3*x) * 3;
             int di = (y * ow + x) * 3;
-            outp[di]   = rsize[si];      // R
-            outp[di+1] = rsize[si + 4];  // G
-            outp[di+2] = rsize[si + 8];  // B
+            outp[di]   = rsize[si];
+            outp[di+1] = rsize[si + 4];
+            outp[di+2] = rsize[si + 8];
         }
     }
 
