@@ -1,5 +1,4 @@
 #include "math.h"
-#include <direct.h>
 #include "utils/fileutils.h"
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
