@@ -172,7 +172,7 @@ int main(int argc, char** argv) {
     }
 
     if (!(flags & DITHER_BURST)) {
-        if (initdither(&canvas, concat_paths("palettes", color_palette), out, &settings, &color_settings)) {
+        if (initdither(&canvas, concat_path_ext("palettes", color_palette, "png"), out, &settings, &color_settings)) {
             printf("Dither \x1b[31mfailed\x1b[0m.\n");
             return 2;
         }
