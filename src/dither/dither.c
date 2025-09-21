@@ -1,5 +1,6 @@
 #include <limits.h>
 #include <float.h>
+#include <string.h>
 #include "dither.h"
 #include "canvas.h"
 #include "../utils/fileutils.h"
