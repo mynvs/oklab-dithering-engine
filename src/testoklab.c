@@ -1,5 +1,5 @@
 #include "stdio.h"
-#include "dither/color_space.h"
+#include "color_space.h"
 
 typedef struct {
     const char * name;

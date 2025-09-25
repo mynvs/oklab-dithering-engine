@@ -10,12 +10,45 @@
 #include <sys/stat.h>
 #endif
 
-#include "dither/color_space.h"
-#include "dither/dither.h"
+#include "color_space.h"
+#include "dither.h"
 #include "utils/fileutils.h"
+
+#include "methods/errdiff.h"
+#include "methods/bayer.h"
 
 #define SHOW_IMAGE (1)
 #define DITHER_BURST (1 << 2)
+
+void dither(const dither_settings* settings, const oklab_settings* oklab, canvas_t* canvas) {
+    canvasf_t lab_canvas = oklab_canvas(canvas);
+    if (!lab_canvas.input || !lab_canvas.palette || !lab_canvas.output) {
+        return;
+    }
+
+    size_t num_pixels = canvas->width * canvas->height;
+
+    switch(settings->stalg){
+        case errordiffuse:
+            errdiff_dither(settings, oklab, &lab_canvas, num_pixels);
+            break;
+        case ordered:
+            bayer_dither(settings, oklab, &lab_canvas, num_pixels);
+            break;
+        case none:
+            memcpy(lab_canvas.output, lab_canvas.input, num_pixels * canvas->channels * sizeof(float));
+            break;
+    }
+
+    for (int i = 0; i < canvas->width*canvas->height; i++) { // welp
+        int p = i * canvas->channels;
+        float target_color[3];
+        oklab_srgb(&lab_canvas.output[p], target_color);
+        float_triple_to_bytes(target_color, &canvas->output[p]);
+        canvas->output[p+3] = cclamp(lab_canvas.output[p+3] * 255.0f);
+    }
+    canvasf_clear(&lab_canvas);
+}
 
 int initdither(canvas_t* canvas, const char* color_palette, const char* out,
                 dither_settings* settings, oklab_settings* oklab)

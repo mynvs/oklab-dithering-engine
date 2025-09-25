@@ -5,7 +5,7 @@
 #include "external/stb_image_write.h"
 
 int main(int argc, char* argv[]) {
-    unsigned char RED = 2, GRN = 14, BLU = 2; // ALPHA disabled by default
+    unsigned char RED = 2, GRN = 14, BLU = 2;
 
     if(argc > 1) RED = atoi(argv[1]);
     if(argc > 2) GRN = atoi(argv[2]);

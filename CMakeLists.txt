@@ -38,11 +38,16 @@ elseif("${CMAKE_C_COMPILER_ID}" STREQUAL "MSVC" )
 endif()
 
 set(ditherlib
-    src/dither/color_space.h
-    src/dither/canvas.h
-    src/dither/canvas.c
-    src/dither/dither.h
-    src/dither/dither.c
+    src/color_space.h
+    src/canvas.h
+    src/canvas.c
+    src/dither.h
+
+    src/methods/errdiff.h
+    src/methods/errdiff.c
+
+    src/methods/bayer.h
+    src/methods/bayer.c
 )
 
 # executables
@@ -65,8 +70,8 @@ add_executable(subpixeler
 
 if(BUILD_TESTS)
     add_executable(testoklab src/testoklab.c
-        src/dither/color_space.c
-        src/dither/color_space.h
+        src/color_space.c
+        src/color_space.h
     )
 endif()
 
