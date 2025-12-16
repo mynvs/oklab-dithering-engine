@@ -71,7 +71,6 @@ static char** list_files(const char* dir, unsigned int* len, const char* filterb
 			unsigned int slen = 0;
 			char** sf = list_files(afp, &slen, filterby);
 			if(sf){
-				snprintf(afp, sizeof(afp), "%s/%s", dir, entry->d_name);
 				files = (char**)realloc(files, (*len + slen) * sizeof *files);
 				for(unsigned int i = 0; i < slen; i++)
 					files[*len + i] = sf[i];
@@ -79,7 +78,6 @@ static char** list_files(const char* dir, unsigned int* len, const char* filterb
 				free(sf);
 			}
 		} else if (entry->d_type == DT_REG) {
-			snprintf(afp, sizeof(afp), "%s/%s", dir, entry->d_name);
 			if(!filterby || strstr(afp, filterby)){
     			files = (char**)realloc(files, (*len + 1) * sizeof *files);
     			files[*len] = strdup(afp);

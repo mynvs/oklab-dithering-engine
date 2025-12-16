@@ -2,7 +2,7 @@
 #include "color_space.h"
 
 typedef struct {
-    const char * name;
+    const char* name;
     float colors[3];
 } color_info;
 

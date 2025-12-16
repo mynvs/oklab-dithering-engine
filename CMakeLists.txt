@@ -40,14 +40,10 @@ endif()
 set(ditherlib
     src/color_space.h
     src/canvas.h
-    src/canvas.c
     src/dither.h
 
     src/methods/errdiff.h
-    src/methods/errdiff.c
-
     src/methods/bayer.h
-    src/methods/bayer.c
 )
 
 # executables

@@ -24,44 +24,44 @@ typedef struct {
 } oklab_settings;
 
 // float -> unsigned char; clamps input between 0 and 255, then casts to unsigned char
-static unsigned char cclamp(float n) {
+static inline unsigned char cclamp(float n) {
     if (n < 0) return 0;
     if (n > 255) return 255;
     return (unsigned char)roundf(n);
 }
 
-static void byte_triple_to_floats(unsigned char bytes[3], float floats[3]) {
+static inline void byte_triple_to_floats(unsigned char bytes[3], float floats[3]) {
     floats[0] = (float)bytes[0] * INT8_REC;
     floats[1] = (float)bytes[1] * INT8_REC;
     floats[2] = (float)bytes[2] * INT8_REC;
 }
 
-static void float_triple_to_bytes(float floats[3], unsigned char bytes[3]) {
+static inline void float_triple_to_bytes(float floats[3], unsigned char bytes[3]) {
     bytes[0] = cclamp(floats[0]*255);
     bytes[1] = cclamp(floats[1]*255);
     bytes[2] = cclamp(floats[2]*255);
 }
 
 // float -> float; converts an srgb value to linear srgb
-static float linearize(float x) {
+static inline float linearize(float x) {
     return x > 0.04045f
         ? powf((x + 0.055)*0.94786729857819905, 2.4)
         : x * 0.07739938080495357;
 }
 
 // float -> float; converts a linear srgb value to srgb
-static float unlinearize(float x) {
+static inline float unlinearize(float x) {
     return x > 0.0031308f
         ? powf(x, 0.41666666666666667)*1.055 - 0.055
         : 12.92 * x;
 }
 
-static float euclidean_distance(float a[3], float b[3]) {
+static inline float euclidean_distance(float a[3], float b[3]) {
     float x = a[0]-b[0], y = a[1]-b[1], z = a[2]-b[2];
     return x*x + y*y + z*z;
 }
 
-static float hcl_oklab_distance(const oklab_settings* settings, float a[3], float b[3]) {
+static inline float hcl_oklab_distance(const oklab_settings* settings, float a[3], float b[3]) {
     float deltaLuminance = a[0] - b[0];
     float chromaA = sqrt(a[1] * a[1] + a[2] * a[2]);
     float chromaB = sqrt(b[1] * b[1] + b[2] * b[2]);
@@ -76,7 +76,7 @@ static float hcl_oklab_distance(const oklab_settings* settings, float a[3], floa
 }
 
 // converts an srgb input to oklab
-static void srgb_oklab(const float rgb[3], float lab[3]) {
+static inline void srgb_oklab(const float rgb[3], float lab[3]) {
     // srgb -> linear srgb
     const float a = linearize(rgb[0]);
     const float b = linearize(rgb[1]);
@@ -91,7 +91,7 @@ static void srgb_oklab(const float rgb[3], float lab[3]) {
 }
 
 // float[3] -> unsigned char[3]; converts an oklab input to srgb
-static void oklab_srgb(const float lab[3], float rgb[3]) {
+static inline void oklab_srgb(const float lab[3], float rgb[3]) {
     // oklab -> linear srgb
     float a = lab[0] + 0.3963377774 * lab[1] + 0.2158037573 * lab[2];
     float b = lab[0] - 0.1055613458 * lab[1] - 0.0638541728 * lab[2];
@@ -105,7 +105,7 @@ static void oklab_srgb(const float lab[3], float rgb[3]) {
     rgb[2] = unlinearize(-0.0041960863 * a - 0.7034186147 * b + 1.7076147010 * c);
 }
 
-static void oklab_hue_shift(const oklab_settings* settings, float color[3]) {
+static inline void oklab_hue_shift(const oklab_settings* settings, float color[3]) {
     float old_color_1 = color[1];
     color[0] = settings->l_offset + color[0] * settings->l_scale;
     color[1] = settings->a_offset +

@@ -20,7 +20,7 @@ static void set_dither_defaults(dither_settings* settings){
     settings->dither_intensity = 0.75;
 }
 
-static int closest_palette_color(const canvasf_t* canvas, const oklab_settings* oklab,
+static inline int closest_palette_color(const canvasf_t* canvas, const oklab_settings* oklab,
                               float lab_color[3])
 {
     int best_index = 0;

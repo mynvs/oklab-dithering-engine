@@ -3,12 +3,13 @@
 #include "limits.h"
 #include "float.h"
 
-#ifndef __GNUC__
+#ifdef _WIN32
 #include <windows.h>
 #else
 #include <unistd.h>
-#include <sys/stat.h>
 #endif
+
+#include <sys/stat.h>
 
 #include "color_space.h"
 #include "dither.h"
@@ -197,6 +198,24 @@ int main(int argc, char** argv) {
                 color_settings.chroma_distance_weight = chroma_distance_weight;
                 color_settings.luminance_distance_weight = luminance_distance_weight;
             }
+        }
+        else if (!strcmp(argv[i], "--help")) {
+            printf(
+                "\n"
+                "--commands--\n"
+                "-i <filepath> (input file path)\n"
+                "-o <filepath without extension> (output file path)\n"
+                "-c <palette name> (color palette to use) [REQUIRES THE palettes DIRECTORY WITH]\n"
+                "-a <errdiff/bayer> (algorithm to use)\n"
+                "-p <alien/abomination/cyberblue/invert> (dither color settings preset)\n"
+                "--dintensity <decimal number> (dither intensity)\n"
+                "--show (show result image with image viewer)\n"
+                "--allp (batch dither input with all palettes)\n"
+                "--loffset <decimal number> (luminance offset)\n"
+                "--lscale <decimal number> (luminance scale)\n"
+                "--distancetune <hue & chroma & luminance> (tune distance weights for dithering)\n"
+            );
+            return 2;
         }
     }
 
