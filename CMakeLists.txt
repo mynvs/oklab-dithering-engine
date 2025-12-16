@@ -71,6 +71,8 @@ if(BUILD_TESTS)
     )
 endif()
 
+target_link_libraries(dither m)
+
 if(WIN32)
     target_sources(dither PRIVATE res/win32/dither_res.rc)
     target_sources(make-palette PRIVATE res/win32/makepalette_res.rc)
